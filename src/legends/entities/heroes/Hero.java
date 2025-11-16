@@ -7,6 +7,9 @@ import legends.items.Potion;
 import legends.items.Spell;
 import legends.items.Weapon;
 
+/**
+ * Abstract base class for all hero types in the game.
+ */
 public abstract class Hero {
 
     // ----- Core attributes -----
@@ -25,7 +28,18 @@ public abstract class Hero {
     protected Weapon equippedWeapon;
     protected Armor equippedArmor;
 
-    // ----- Constructor -----
+    /**
+     * Constructor for a hero.
+     * 
+     * @param name the name of the hero
+     * @param level the level of the hero
+     * @param hp the health points of the hero
+     * @param mp the mana points of the hero
+     * @param strength the strength attribute of the hero
+     * @param agility the agility attribute of the hero
+     * @param dexterity the dexterity attribute of the hero
+     * @param gold the gold amount the hero has
+     */
     public Hero(String name,
                 int level,
                 double hp,
@@ -74,6 +88,9 @@ public abstract class Hero {
 
     // ----- Equipment management -----
 
+    /**
+     * Equip a weapon from inventory.
+     */
     public void equipWeapon(Weapon w) {
         if (w == null) {
             return;
@@ -82,6 +99,9 @@ public abstract class Hero {
         this.equippedWeapon = w;
     }
 
+    /**
+     * Equip an armor from inventory.
+     */
     public void equipArmor(Armor a) {
         if (a == null) {
             return;
@@ -109,10 +129,18 @@ public abstract class Hero {
         }
     }
 
+    /**
+     * Check if the hero has fainted (HP <= 0).
+     * 
+     * @return true if fainted, false otherwise
+     */
     public boolean isFainted() {
         return hp <= 0;
     }
 
+    /**
+     * Revive the hero at half health and mana.
+     */
     public void reviveAtHalf() {
         // when battle ends and hero fainted
         hp = (level * 100) / 2.0; 
@@ -121,6 +149,9 @@ public abstract class Hero {
 
     // ----- Level / XP / Gold -----
 
+    /**
+     * Gain experience points and handle leveling up.
+     */
     public void gainExperience(double amount) {
         experience += amount;
         while (experience >= experienceToLevelUp()) {
@@ -129,16 +160,33 @@ public abstract class Hero {
         }
     }
 
+    /**
+     * Calculate experience needed to level up.
+     * 
+     * @return experience points needed for next level
+     */
     protected int experienceToLevelUp() {
         return level * 10;
     }
 
+    /**
+     * Level up the hero, increasing stats.
+     */
     protected abstract void levelUp(); 
 
+    /**
+     * Gain gold.
+     */
     public void gainGold(double amount) {
         gold += amount;
     }
 
+    /**
+     * Spend gold. Returns true if successful.
+     * 
+     * @param amount amount of gold to spend
+     * @return true if enough gold, false otherwise
+     */
     public boolean spendGold(double amount) {
         if (gold < amount) {
             return false;
@@ -149,6 +197,11 @@ public abstract class Hero {
 
     // ----- Dodge chance -----
 
+    /**
+     * Calculate the hero's dodge chance based on agility.
+     * 
+     * @return dodge chance as a decimal (e.g., 0.1 for 10%)
+     */
     public double getDodgeChance() {
         // from spec: hero dodge chance
         return agility * 0.002;
@@ -156,50 +209,110 @@ public abstract class Hero {
 
     // ----- Getters -----
 
+    /**
+     * Get the hero's name.
+     * 
+     * @return hero's name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Get the hero's level.
+     * 
+     * @return hero's level
+     */
     public int getLevel() {
         return level;
     }
 
+    /**
+     * Get the hero's current health points (HP).
+     * 
+     * @return hero's HP
+     */
     public double getHp() {
         return hp;
     }
 
+    /**
+     * Get the hero's current mana points (MP).
+     * 
+     * @return hero's MP
+     */
     public double getMp() {
         return mp;
     }
 
+    /**
+     * Get the hero's strength attribute.
+     * 
+     * @return hero's strength
+     */
     public double getStrength() {
         return strength;
     }
 
+    /**
+     * Get the hero's agility attribute.
+     * 
+     * @return hero's agility
+     */
     public double getAgility() {
         return agility;
     }
 
+    /**
+     * Get the hero's dexterity attribute.
+     * 
+     * @return hero's dexterity
+     */
     public double getDexterity() {
         return dexterity;
     }
 
+    /**
+     * Get the hero's gold amount.
+     * 
+     * @return hero's gold
+     */
     public double getGold() {
         return gold;
     }
 
+    /**
+     * Get the hero's inventory.
+     * 
+     * @return hero's inventory
+     */
     public Inventory getInventory() {
         return inventory;
     }
 
+    /**
+     * Get the hero's equipped weapon.
+     * 
+     * @return hero's equipped weapon
+     */
     public Weapon getEquippedWeapon() {
         return equippedWeapon;
     }
 
+    /**
+     * Get the hero's equipped armor.
+     * 
+     * @return hero's equipped armor
+     */
     public Armor getEquippedArmor() {
         return equippedArmor;
     }
 
+    /**
+     * Returns a string representation of the hero.
+     * 
+     * @return string representation of the hero
+     */
     @Override
     public String toString() {
         return name +

@@ -1,30 +1,41 @@
 package legends.items;
 
+/**
+ * Class representing an armor item.
+ */
 public class Armor extends Item {
+    private final int damageReduction;
 
-    // Simple example: flat damage reduction value.
-    private int damageReduction;
-
-    public Armor() {
-        this(0);
+    /**
+     * Constructor for an armor.
+     * 
+     * @param name the name of the armor
+     * @param cost the cost of the armor
+     * @param requiredLevel the required level to use the armor
+     * @param damageReduction the amount of damage reduction provided by the armor
+     */
+    public Armor(String name, double cost, int requiredLevel, int damageReduction) {
+        super(name, cost, requiredLevel);
+        this.damageReduction = damageReduction;
     }
 
-    public Armor(int damageReduction) {
-        this.damageReduction = Math.max(0, damageReduction);
-    }
-
+    /**
+     * Getters for armor attributes.
+     * 
+     * @return damage reduction provided by the armor
+     */
     public int getDamageReduction() {
         return damageReduction;
     }
 
-    public void setDamageReduction(int damageReduction) {
-        this.damageReduction = Math.max(0, damageReduction);
-    }
-
+    /**
+     * Returns a string representation of the armor.
+     * 
+     * @return string representation of the armor
+     */
     @Override
     public String toString() {
-        return "Armor{" +
-                "damageReduction=" + damageReduction +
-                '}';
+        return super.toString() +
+                " [Armor reduction=" + damageReduction + "]";
     }
 }

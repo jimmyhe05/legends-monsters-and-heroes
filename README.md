@@ -20,7 +20,8 @@ Some highlights and design notes you may want to include in your submission:
 
 1. Navigate to the directory "legends-monsters-and-heroes" after unzipping the files
 2. Run the following instructions: 
-javac -d out $(find src -name "*.java") && java -cp out legends.Main
+<!-- javac -d out $(find src -name "*.java") && java -cp out legends.Main -->
+javac --release 8 -d out $(find src -name "*.java") && java -cp out legends.Main
 
 
 ## Input/Output Example
