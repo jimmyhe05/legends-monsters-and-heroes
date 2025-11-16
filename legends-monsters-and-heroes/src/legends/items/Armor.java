@@ -1,5 +1,5 @@
 package legends.items;
 
-public class Armory {
+public class Armor {
     
 }

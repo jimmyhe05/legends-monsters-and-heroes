@@ -1,5 +1,5 @@
 package legends.items;
 
-public class Potions {
+public class Potion {
     
 }
