@@ -14,6 +14,8 @@ Below is a list of the main Java source files included in this submission and a 
 ---------------------------------------------------------------------------
 Some highlights and design notes you may want to include in your submission:
 
+1. Unique hero selection and removing a hero from the party.
+
 
 ## How to compile and run
 ---------------------------------------------------------------------------

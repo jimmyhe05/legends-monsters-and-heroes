@@ -1,28 +1,37 @@
 package legends.game;
 
 /**
- * Abstract base class for all tile types on the game map.
+ * Class representing an inaccessible tile on the game map.
  */
-public abstract class Tile {
+public class CommonTile extends Tile {
 
     /**
      * Check if the tile is accessible by heroes.
      * 
      * @return true if accessible, false otherwise
      */
-    public abstract boolean isAccessible();
+    @Override
+    public boolean isAccessible() {
+        return true;
+    }
 
     /**
      * Check if the tile has a market.
      * 
      * @return true if there is a market, false otherwise
      */
-    public abstract boolean hasMarket();
+    @Override
+    public boolean hasMarket() {
+        return false;
+    }
 
     /**
      * Get the symbol representing the tile.
      * 
      * @return character symbol of the tile
      */
-    public abstract char getSymbol();
+    @Override
+    public char getSymbol() {
+        return ' ';
+    }
 }
