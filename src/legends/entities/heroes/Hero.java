@@ -147,6 +147,19 @@ public abstract class Hero {
         mp = mp / 2.0;
     }
 
+    /**
+     * Regenerate some HP and MP at the end of a battle round
+     * if the hero has not fainted.
+     */
+    public void regenAfterRound() {
+        if (isFainted()) {
+            return;
+        }
+        hp *= 1.1;
+        mp *= 1.1;
+    }
+
+
     // ----- Level / XP / Gold -----
 
     /**

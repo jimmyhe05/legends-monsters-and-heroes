@@ -27,6 +27,9 @@ public class FireSpell extends Spell {
      */
     @Override
     public void applyEffect(Monster m) {
-        // TODO: implement effect: reduce monster defense by some percentage
+        if (m == null || m.isDead()) return;
+        double newDefense = m.getDefense() * 0.9; // -10%
+        m.setDefense(newDefense);
+        System.out.println(m.getName() + "'s defense is reduced!");
     }
 }

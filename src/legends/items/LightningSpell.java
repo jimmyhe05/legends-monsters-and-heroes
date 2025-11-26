@@ -27,6 +27,9 @@ public class LightningSpell extends Spell {
      */
     @Override
     public void applyEffect(Monster m) {
-        // TODO: implement effect: reduce monster dodge chance by some percentage
+        if (m == null || m.isDead()) return;
+        double newDodge = m.getDodgeChance() * 0.9; // still in %
+        m.setDodgeChance(newDodge);
+        System.out.println(m.getName() + "'s dodge chance is reduced!");
     }
 }

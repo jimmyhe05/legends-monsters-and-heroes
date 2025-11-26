@@ -128,6 +128,33 @@ public abstract class Monster {
     public double getDodgeChance() {
         return dodgeChance;
     }
+    
+    /**
+     * Set the monster's base damage.
+     * 
+     * @param baseDamage the new base damage
+     */
+    public void setBaseDamage(double baseDamage) {
+        this.baseDamage = baseDamage;
+    }
+
+    /**
+     * Set the monster's defense.
+     * 
+     * @param defense the new defense value
+     */
+    public void setDefense(double defense) {
+        this.defense = defense;
+    }
+
+    /**
+     * Set the monster's dodge chance.
+     * 
+     * @param dodgeChance the new dodge chance percentage
+     */
+    public void setDodgeChance(double dodgeChance) {
+        this.dodgeChance = dodgeChance;
+    }
 
     /**
      * Returns a string representation of the monster.

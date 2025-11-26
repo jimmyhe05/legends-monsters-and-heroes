@@ -4,8 +4,15 @@ import legends.entities.heroes.Hero;
 import legends.entities.heroes.Paladin;
 import legends.entities.heroes.Sorcerer;
 import legends.entities.heroes.Warrior;
+import legends.entities.monsters.Monster;
+import legends.entities.monsters.Dragon;
+import legends.entities.monsters.Spirit;
+import legends.entities.monsters.Exoskeleton;
+import legends.game.DataLoader;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 /**
@@ -20,15 +27,21 @@ public class Game {
     private final List<Hero> party;
     private boolean running;
     private final Scanner in;
+    private final Random rand;
 
     private List<Warrior> allWarriors;
     private List<Paladin> allPaladins;
     private List<Sorcerer> allSorcerers;
 
+    private List<Dragon> allDragons;
+    private List<Spirit> allSpirits;
+    private List<Exoskeleton> allExoskeletons;
+
     public Game() {
         this.party = new ArrayList<Hero>();
         this.in = new Scanner(System.in);
         this.running = false;
+        this.rand = new Random();
     }
 
     /**
@@ -53,16 +66,16 @@ public class Game {
         System.out.println("and fight terrifying monsters in turn-based battles.\n");
 
         loadHeroData();
+        loadMonsterData();
         chooseHeroes();
 
         int size = askBoardSize();
-        board = new Board(size); 
+        board = new Board(size);
         running = true;
     }
 
     /**
      * Ask the user for the desired board size.
-     * 
      * @return the chosen board size
      */
     private int askBoardSize() {
@@ -92,7 +105,7 @@ public class Game {
      * Load hero data from files.
      */
     private void loadHeroData() {
-        String base = "data/"; 
+        String base = "data/";
 
         allWarriors = DataLoader.loadWarriors(base + "heroes/Warriors.txt");
         allPaladins = DataLoader.loadPaladins(base + "heroes/Paladins.txt");
@@ -102,6 +115,23 @@ public class Game {
         System.out.println("  Warriors: " + allWarriors.size());
         System.out.println("  Paladins: " + allPaladins.size());
         System.out.println("  Sorcerers: " + allSorcerers.size());
+        System.out.println();
+    }
+
+    /**
+     * Load monster data from files.
+     */
+    private void loadMonsterData() {
+        String base = "data/";
+
+        allDragons = DataLoader.loadDragons(base + "monsters/Dragons.txt");
+        allSpirits = DataLoader.loadSpirits(base + "monsters/Spirits.txt");
+        allExoskeletons = DataLoader.loadExoskeletons(base + "monsters/Exoskeletons.txt");
+
+        System.out.println("Loaded monsters:");
+        System.out.println("  Dragons: " + allDragons.size());
+        System.out.println("  Spirits: " + allSpirits.size());
+        System.out.println("  Exoskeletons: " + allExoskeletons.size());
         System.out.println();
     }
 
@@ -174,7 +204,6 @@ public class Game {
 
     /**
      * Let the user pick a hero from the given list to add to their party.
-     * 
      * @param list the list of heroes to choose from
      */
     private <T extends Hero> void pickHeroFromList(List<T> list) {
@@ -339,7 +368,6 @@ public class Game {
 
     /**
      * Handle movement commands.
-     * 
      * @param direction the direction character ('W', 'A', 'S', 'D')
      */
     private void handleMove(char direction) {
@@ -404,9 +432,126 @@ public class Game {
      */
     private void maybeTriggerBattle() {
         double encounterChance = 0.3; // 30%
-        if (Math.random() < encounterChance) {
-            System.out.println("A group of monsters appears!");
-            // TODO: create monsters and call Battle class
+        if (Math.random() >= encounterChance) {
+            return;
         }
+
+        System.out.println("A group of monsters appears!");
+
+        List<Monster> encounter = createEncounter();
+        if (encounter.isEmpty()) {
+            System.out.println("No monsters available to fight.");
+            return;
+        }
+
+        Battle battle = new Battle(party, encounter);
+        battle.start();
+
+        // If all heroes fainted, end the game.
+        if (allHeroesFainted()) {
+            System.out.println("Your entire party has fallen...");
+            running = false;
+        }
+    }
+
+    /**
+     * Create a monster encounter scaled to the party.
+     * Simple rule: one monster per hero, at max hero level.
+     */
+    private List<Monster> createEncounter() {
+        List<Monster> result = new ArrayList<Monster>();
+
+        if ((allDragons == null || allDragons.isEmpty()) &&
+            (allSpirits == null || allSpirits.isEmpty()) &&
+            (allExoskeletons == null || allExoskeletons.isEmpty())) {
+            return result;
+        }
+
+        int maxLevel = getMaxHeroLevel();
+        int count = party.size();
+
+        for (int i = 0; i < count; i++) {
+            Monster m = createRandomMonsterForLevel(maxLevel);
+            if (m != null) {
+                result.add(m);
+            }
+        }
+
+        return result;
+    }
+
+    private int getMaxHeroLevel() {
+        int max = 1;
+        for (Hero h : party) {
+            if (h.getLevel() > max) {
+                max = h.getLevel();
+            }
+        }
+        return max;
+    }
+
+    /**
+     * Create a single random monster for a given level
+     * by sampling from loaded monsters and building a fresh instance.
+     */
+    private Monster createRandomMonsterForLevel(int level) {
+        // 0 = Dragon, 1 = Spirit, 2 = Exoskeleton
+        for (int attempts = 0; attempts < 10; attempts++) {
+            int type = rand.nextInt(3);
+
+            switch (type) {
+                case 0:
+                    if (allDragons != null && !allDragons.isEmpty()) {
+                        Dragon protoD = allDragons.get(rand.nextInt(allDragons.size()));
+                        return new Dragon(
+                                protoD.getName(),
+                                level,
+                                protoD.getBaseDamage(),
+                                protoD.getDefense(),
+                                protoD.getDodgeChance()
+                        );
+                    }
+                    break;
+                case 1:
+                    if (allSpirits != null && !allSpirits.isEmpty()) {
+                        Spirit protoS = allSpirits.get(rand.nextInt(allSpirits.size()));
+                        return new Spirit(
+                                protoS.getName(),
+                                level,
+                                protoS.getBaseDamage(),
+                                protoS.getDefense(),
+                                protoS.getDodgeChance()
+                        );
+                    }
+                    break;
+                default:
+                    if (allExoskeletons != null && !allExoskeletons.isEmpty()) {
+                        Exoskeleton protoE = allExoskeletons.get(rand.nextInt(allExoskeletons.size()));
+                        return new Exoskeleton(
+                                protoE.getName(),
+                                level,
+                                protoE.getBaseDamage(),
+                                protoE.getDefense(),
+                                protoE.getDodgeChance()
+                        );
+                    }
+                    break;
+            }
+        }
+
+        // Fallback: no monsters available of selected types
+        return null;
+    }
+
+    /**
+     * Check if all heroes have fainted.
+     */
+    private boolean allHeroesFainted() {
+        for (Hero h : party) {
+            if (!h.isFainted()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

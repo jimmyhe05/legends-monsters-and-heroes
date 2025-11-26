@@ -27,6 +27,9 @@ public class IceSpell extends Spell {
      */
     @Override
     public void applyEffect(Monster m) {
-        // TODO: implement effect: reduce monster baseDamage by some percentage
+        if (m == null || m.isDead()) return;
+        double newDamage = m.getBaseDamage() * 0.9;
+        m.setBaseDamage(newDamage);
+        System.out.println(m.getName() + "'s damage is reduced!");
     }
 }
