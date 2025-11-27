@@ -129,6 +129,9 @@ public class Battle {
                 case 3:
                     // Only consume the turn if a potion was actually used
                     if (handleUsePotion(hero)) {
+                        // Show updated hero stats after potion effects
+                        System.out.println("Updated hero stats:");
+                        System.out.println("  " + hero);
                         return;
                     }
                     // otherwise, re-show the action menu
@@ -137,6 +140,8 @@ public class Battle {
                     // Changing equipment does NOT consume the turn; after
                     // equipping, let the player choose another action.
                     handleChangeEquipment(hero);
+                    System.out.println("Updated equipment:");
+                    System.out.println("  " + hero);
                     break;
                 case 5:
                     // Attempt to flee the battle for the whole party.

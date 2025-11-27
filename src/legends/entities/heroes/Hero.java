@@ -95,6 +95,9 @@ public abstract class Hero {
             // Remove once it has no uses left
             inventory.removePotion(p);
         }
+
+        String niceName = p.getName() != null ? p.getName().replace('_', ' ') : "potion";
+        System.out.println(getDisplayName() + " used " + niceName + ".");
     }
 
     // ----- Equipment management -----

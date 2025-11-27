@@ -210,6 +210,8 @@ public class Market {
 		}
 
 		System.out.println("Repaired " + chosen.getName() + " for " + repairCost + " gold.");
+		System.out.println("Updated hero info:");
+		System.out.println("  " + hero);
 	}
 
 	/* ===================== BUY ===================== */
@@ -235,15 +237,23 @@ public class Market {
 			switch (choice) {
 				case 1:
 					buyFromList(hero, in, weapons, "weapon");
+					System.out.println("Updated hero info:");
+					System.out.println("  " + hero);
 					break;
 				case 2:
 					buyFromList(hero, in, armors, "armor");
+					System.out.println("Updated hero info:");
+					System.out.println("  " + hero);
 					break;
 				case 3:
 					buyFromList(hero, in, potions, "potion");
+					System.out.println("Updated hero info:");
+					System.out.println("  " + hero);
 					break;
 				case 4:
 					buyFromList(hero, in, spells, "spell");
+					System.out.println("Updated hero info:");
+					System.out.println("  " + hero);
 					break;
 				case 5:
 					back = true;
@@ -376,7 +386,8 @@ public class Market {
 		}
 
 		System.out.println("Purchased " + item.getName() + " for " + cost + " gold.");
-		System.out.println("" + hero.getName() + " now has " + hero.getGold() + " gold left.");
+		// Use display name so underscores do not appear in hero names
+		System.out.println(hero.getDisplayName() + " now has " + hero.getGold() + " gold left.");
 	}
 
 	/* ===================== SELL ===================== */
@@ -447,6 +458,8 @@ public class Market {
 
 		hero.gainGold(refund);
 		System.out.println("Sold " + item.getName() + " for " + refund + " gold.");
+		System.out.println("Updated hero info:");
+		System.out.println("  " + hero);
 	}
 
     /**
