@@ -147,6 +147,9 @@ Some highlights and design notes for this implementation:
 <!-- javac -d out $(find src -name "*.java") && java -cp out legends.Main -->
 javac --release 8 -d out $(find src -name "*.java") && java -cp out legends.Main
 
+## Demo
+
+You can watch a short demo run of the game here: [example-run.mov](./example-run.mov)
 
 ## Input/Output Example
 ---------------------------------------------------------------------------
