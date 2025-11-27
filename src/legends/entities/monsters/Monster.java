@@ -39,7 +39,7 @@ public abstract class Monster {
         // Apply a global scaling factor so monsters are not overly lethal,
         // especially at low hero levels. This keeps relative strengths
         // between monsters while making battles more survivable.
-        double scalingFactor = 0.5; // 50% of the listed base damage
+        double scalingFactor = 0.1; // 10% of the listed base damage
         return baseDamage * scalingFactor;
     }
 
