@@ -153,6 +153,9 @@ You can watch a short demo run of the game here: [example-run.mov](./example-run
 
 ## Input/Output Example
 ---------------------------------------------------------------------------
+## Sample Run
+
+```text
 ===========================================
 WELCOME TO LEGENDS: MONSTERS & HEROES
 ===========================================
@@ -230,19 +233,6 @@ Your party (2 heroes):
   Sehanine Moonbow (Paladin)
 
 
-1. Add Warrior
-2. Add Paladin
-3. Add Sorcerer
-4. Finish selection
-5. Remove hero from party
-
-Enter choice: 4
-
-Your party (2 heroes):
-  Gaerdal Ironhand (Warrior)
-  Sehanine Moonbow (Paladin)
-
-
 Choose board size (NxN).
 Press ENTER for default 8x8.
 Or enter a size between 5 and 12: 8
@@ -254,22 +244,9 @@ Or enter a size between 5 and 12: 8
 | M | . | . | . | . | . | . | . |
 | . | . | X | M | M | . | . | . |
 | . | . | . | . | X | . | . | X |
-| M | . | X | M | . | . | M | . |
-| M | X | M | X | M | . | H | . |
+| M | . | X | M | . | . | H | . |
+| M | X | M | X | M | . | * | . |
 | . | . | M | . | M | X | X | . |
-
-Controls: W/A/S/D to move | I: info | E: equip/use | M: market | Q: quit
-Enter command: s
-That tile is inaccessible!
-
-=== World Map ===
-... (map printouts omitted for brevity) ...
-
-
-You stepped on a MARKET tile. Press 'M' to enter.
-
-=== World Map ===
-... (map with H on market) ...
 
 Controls: W/A/S/D to move | I: info | E: equip/use | M: market | Q: quit
 Enter command: m
@@ -281,8 +258,8 @@ Entering market...
 Choose a hero (or 0 to leave market):
 
   Idx  Hero                 Lvl      Gold
-  1    Gaerdal Ironhand       1    1354.0
-  2    Sehanine Moonbow       1    2500.0
+   1   Gaerdal Ironhand       1    1354.0
+   2   Sehanine Moonbow       1    2500.0
 
 Hero index (0=leave): 1
 
@@ -321,17 +298,9 @@ Choose index to buy (0=cancel): 1
 
 Purchased Sword for 500.0 gold.
 Gaerdal Ironhand now has 854.0 gold left.
-Updated hero info:
-  Gaerdal Ironhand [Lvl 1 | HP=100.0 | MP=100.0 | STR=700.0 | DEX=600.0 | AGI=500.0 | Gold=854.0]
 
 
-... (similar formatted sections for buying armor, potions, spells) ...
-
-
-=== Party Info ===
-  Gaerdal Ironhand  [Lvl 1 | HP=200.0 | MP=100.0 | STR=700.0 | DEX=600.0 | AGI=500.0 | Gold=104.0]
-  Sehanine Moonbow  [Lvl 1 | HP=100.0 | MP=300.0 | STR=750.0 | DEX=700.0 | AGI=700.0 | Gold=2500.0]
-==================
+... (buying armor, potions, spells omitted) ...
 
 
 A group of monsters appears!
@@ -347,6 +316,7 @@ Heroes:
 Monsters:
   Desghidorrah      [Lvl 1 | HP=100.0 | DMG=363.0 | DEF=400.0 | Dodge=35.0%]
   Casper            [Lvl 1 | HP=100.0 | DMG=100.0 | DEF=100.0 | Dodge=60.5%]
+
 
 --- Heroes' Turn ---
 
@@ -366,20 +336,13 @@ Choose a monster to target:
 Index: 1
 Gaerdal Ironhand attacked Desghidorrah for 66.2 damage!
 
-... (rest of battle, similarly formatted) ...
+... (battle continues) ...
 
 
 Heroes win the battle!
-Gaerdal_Ironhand leveled up to 2 (Warrior)!
-Gaerdal_Ironhand gains 100.0 gold and 4.0 EXP.
-Sehanine_Moonbow leveled up to 2 (Paladin)!
-Sehanine_Moonbow gains 100.0 gold and 4.0 EXP.
+Gaerdal Ironhand leveled up to 2 (Warrior)!
+Sehanine Moonbow leveled up to 2 (Paladin)!
 
-=== BATTLE END ===
-
-
-=== World Map ===
-... (updated map) ...
 
 === Party Info ===
   Gaerdal Ironhand  [Lvl 2 | HP=200.0 | MP=133.1 | STR=771.8 | DEX=630.0 | AGI=551.3 | Gold=204.0]
