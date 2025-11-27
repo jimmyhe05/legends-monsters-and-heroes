@@ -30,7 +30,7 @@ public class Warrior extends Hero {
         // For now, start all heroes at level 1, HP = level * 100
         // mp = mana from file, gold = startingGold
         super(name,
-              1,                         // level
+              1,                   // level
               1 * 100.0,                 // hp
               mana,                      // mp
               strength,
@@ -62,12 +62,12 @@ public class Warrior extends Hero {
         // Monster may dodge
         double dodgeProb = m.getDodgeProbability();
         if (Math.random() < dodgeProb) {
-            System.out.println(name + " attacked " + m.getName() + " but it dodged!");
+            // message is handled in Battle.handleAttack for consistency
             return;
         }
 
         m.takeDamage(rawDamage);
-        System.out.println(name + " attacked " + m.getName() + " for " + rawDamage + " damage!");
+        // exact damage and message are handled in Battle.handleAttack
     }
 
     /**
@@ -113,11 +113,11 @@ public class Warrior extends Hero {
     protected void levelUp() {
         level++;
 
-        // Reset HP based on new level
-        hp = level * 100.0;
+    // Reset HP based on new level (no max cap per spec)
+    hp = level * 100.0;
 
-        // MP increases by 10%
-        mp *= 1.1;
+    // MP increases by 10%
+    mp *= 1.1;
 
         // all skills +5%, favored skills + extra 5% (total +10%).
         // For Warrior: favored = strength, agility.

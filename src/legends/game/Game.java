@@ -9,6 +9,11 @@ import legends.entities.monsters.Dragon;
 import legends.entities.monsters.Spirit;
 import legends.entities.monsters.Exoskeleton;
 import legends.game.DataLoader;
+import legends.items.Armor;
+import legends.items.Inventory;
+import legends.items.Potion;
+import legends.items.Weapon;
+import legends.utilities.Color;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +33,7 @@ public class Game {
     private boolean running;
     private final Scanner in;
     private final Random rand;
+    private Market market;
 
     private List<Warrior> allWarriors;
     private List<Paladin> allPaladins;
@@ -59,15 +65,18 @@ public class Game {
      * - create the board
      */
     private void setup() {
-        System.out.println("===========================================");
-        System.out.println("   WELCOME TO LEGENDS: MONSTERS & HEROES   ");
-        System.out.println("===========================================");
-        System.out.println("Lead a party of heroes, explore the land, visit markets,");
-        System.out.println("and fight terrifying monsters in turn-based battles.\n");
+        System.out.println(Color.title("==========================================="));
+        System.out.println(Color.title("   WELCOME TO LEGENDS: MONSTERS & HEROES   "));
+        System.out.println(Color.title("==========================================="));
+        System.out.println(Color.warning("Lead a party of heroes, explore the land, visit markets,"));
+        System.out.println(Color.warning("and fight terrifying monsters in turn-based battles.\n"));
 
         loadHeroData();
         loadMonsterData();
         chooseHeroes();
+
+        // Initialize market (loads item data once)
+        market = new Market();
 
         int size = askBoardSize();
         board = new Board(size);
@@ -247,7 +256,7 @@ public class Game {
             }
 
             party.add(chosen);
-            System.out.println(chosen.getName() + " (" + chosen.getClass().getSimpleName() + ") joined the party!\n");
+            System.out.println(chosen.getDisplayName() + " (" + chosen.getClass().getSimpleName() + ") joined the party!\n");
             printPartySummary();
             return;
         }
@@ -265,7 +274,7 @@ public class Game {
         System.out.println("\nCurrent party:");
         for (int i = 0; i < party.size(); i++) {
             Hero h = party.get(i);
-            System.out.println((i + 1) + ". " + h.getName() + " (" + h.getClass().getSimpleName() + ")");
+            System.out.println((i + 1) + ". " + h.getDisplayName() + " (" + h.getClass().getSimpleName() + ")");
         }
         System.out.print("Enter index of hero to remove (or 0 to cancel): ");
 
@@ -289,20 +298,20 @@ public class Game {
         }
 
         Hero removed = party.remove(idx - 1);
-        System.out.println(removed.getName() + " was removed from the party.");
-        printPartySummary();
+        System.out.println(removed.getDisplayName() + " was removed from the party.");
+            printPartySummary();
     }
 
     /**
      * Print a concise summary of the current party.
      */
     private void printPartySummary() {
-        System.out.println("\nYour party (" + party.size() + " hero" + (party.size() == 1 ? "" : "es") + "):");
+        System.out.println(Color.title("\nYour party (" + party.size() + " hero" + (party.size() == 1 ? "" : "es") + "):"));
         if (party.isEmpty()) {
-            System.out.println("  [empty]");
+            System.out.println(Color.warning("  [empty]"));
         } else {
             for (Hero h : party) {
-                System.out.println("  - " + h.getName() + " (" + h.getClass().getSimpleName() + ")");
+                System.out.println("  - " + h.getDisplayName() + " (" + h.getClass().getSimpleName() + ")");
             }
         }
         System.out.println();
@@ -315,7 +324,7 @@ public class Game {
      */
     private void run() {
         if (party.isEmpty()) {
-            System.out.println("No party selected. Exiting game.");
+			System.out.println(Color.error("No party selected. Exiting game."));
             return;
         }
 
@@ -346,15 +355,18 @@ public class Game {
                 case 'I':
                     showPartyInfo();
                     break;
+                case 'E':
+                    openPartyManagementMenu();
+                    break;
                 case 'M':
                     enterMarketIfPossible();
                     break;
                 case 'Q':
                     running = false;
-                    System.out.println("Quitting game. Goodbye!");
+					System.out.println(Color.warning("Quitting game. Goodbye!"));
                     break;
                 default:
-                    System.out.println("Unknown command.");
+					System.out.println(Color.error("Unknown command."));
             }
         }
     }
@@ -363,7 +375,195 @@ public class Game {
      * Print available controls to the user.
      */
     private void printControls() {
-        System.out.println("Controls: W/A/S/D to move | I: info | M: market | Q: quit");
+		System.out.println(Color.title("Controls: ") +
+				Color.CYAN + "W/A/S/D" + Color.RESET + " to move | " +
+				"I: info | E: equip/use | M: market | Q: quit");
+    }
+
+    /**
+     * Open an out-of-battle party management menu for equipment and potions.
+     */
+    private void openPartyManagementMenu() {
+        while (true) {
+            System.out.println(Color.title("\n=== Party Management ==="));
+            for (int i = 0; i < party.size(); i++) {
+                Hero h = party.get(i);
+                System.out.println("" + (i + 1) + ". " + h.getDisplayName());
+            }
+            System.out.println("0. Back to game");
+            System.out.print("Choose hero: ");
+
+            String line = in.nextLine().trim();
+            int idx;
+            try {
+                idx = Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println(Color.error("Invalid index."));
+                continue;
+            }
+
+            if (idx == 0) {
+                return;
+            }
+            if (idx < 1 || idx > party.size()) {
+                System.out.println(Color.error("Index out of range."));
+                continue;
+            }
+
+            Hero chosen = party.get(idx - 1);
+            manageHeroOutsideBattle(chosen);
+        }
+    }
+
+    /**
+     * Menu to equip items or use potions for a single hero.
+     * 
+     * @param hero the hero to manage
+     */
+    private void manageHeroOutsideBattle(Hero hero) {
+        while (true) {
+            System.out.println(Color.title("\n-- Manage " + hero.getDisplayName() + " --"));
+            System.out.println("1. Equip weapon");
+            System.out.println("2. Equip armor");
+            System.out.println("3. Use potion");
+            System.out.println("0. Back");
+            System.out.print("Choice: ");
+
+            String line = in.nextLine().trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+            char choice = line.charAt(0);
+            switch (choice) {
+                case '1':
+                    equipWeaponOutsideBattle(hero);
+                    break;
+                case '2':
+                    equipArmorOutsideBattle(hero);
+                    break;
+                case '3':
+                    usePotionOutsideBattle(hero);
+                    break;
+                case '0':
+                    return;
+                default:
+                    System.out.println(Color.error("Invalid choice."));
+            }
+        }
+    }
+
+    /**
+     * Equip a weapon for the given hero outside of battle.
+     * 
+     * @param hero the hero to equip a weapon
+     */
+    private void equipWeaponOutsideBattle(Hero hero) {
+        Inventory inv = hero.getInventory();
+        List<Weapon> weapons = inv.getWeapons();
+        if (weapons.isEmpty()) {
+            System.out.println(Color.warning("No weapons in inventory."));
+            return;
+        }
+        System.out.println(Color.title("Available weapons:"));
+        for (int i = 0; i < weapons.size(); i++) {
+            Weapon w = weapons.get(i);
+            System.out.println("" + (i + 1) + ". " + w.getName() + " (DMG=" + w.getDamage() + ")");
+        }
+        System.out.print("Choose weapon index (0 to cancel): ");
+        String line = in.nextLine().trim();
+        int idx;
+        try {
+            idx = Integer.parseInt(line);
+        } catch (NumberFormatException e) {
+            System.out.println(Color.error("Invalid index."));
+            return;
+        }
+        if (idx == 0) {
+            return;
+        }
+        if (idx < 1 || idx > weapons.size()) {
+            System.out.println(Color.error("Index out of range."));
+            return;
+        }
+        Weapon chosen = weapons.get(idx - 1);
+        hero.equipWeapon(chosen);
+        System.out.println(Color.success(hero.getDisplayName() + " equipped " + chosen.getName() + "."));
+    }
+
+    /**
+     * Equip armor for the given hero outside of battle.
+     * 
+     * @param hero the hero to equip armor
+     */
+    private void equipArmorOutsideBattle(Hero hero) {
+        Inventory inv = hero.getInventory();
+        List<Armor> armors = inv.getArmors();
+        if (armors.isEmpty()) {
+            System.out.println(Color.warning("No armor in inventory."));
+            return;
+        }
+        System.out.println(Color.title("Available armors:"));
+        for (int i = 0; i < armors.size(); i++) {
+            Armor a = armors.get(i);
+            System.out.println("" + (i + 1) + ". " + a.getName() + " (DEF=" + a.getDamageReduction() + ")");
+        }
+        System.out.print("Choose armor index (0 to cancel): ");
+        String line = in.nextLine().trim();
+        int idx;
+        try {
+            idx = Integer.parseInt(line);
+        } catch (NumberFormatException e) {
+            System.out.println(Color.error("Invalid index."));
+            return;
+        }
+        if (idx == 0) {
+            return;
+        }
+        if (idx < 1 || idx > armors.size()) {
+            System.out.println(Color.error("Index out of range."));
+            return;
+        }
+        Armor chosen = armors.get(idx - 1);
+        hero.equipArmor(chosen);
+        System.out.println(Color.success(hero.getDisplayName() + " equipped " + chosen.getName() + "."));
+    }
+
+    /**
+     * Use a potion for the given hero outside of battle.
+     * 
+     * @param hero the hero to use a potion
+     */
+    private void usePotionOutsideBattle(Hero hero) {
+        Inventory inv = hero.getInventory();
+        List<Potion> potions = inv.getPotions();
+        if (potions.isEmpty()) {
+            System.out.println(Color.warning("No potions in inventory."));
+            return;
+        }
+        System.out.println(Color.title("Available potions:"));
+        for (int i = 0; i < potions.size(); i++) {
+            Potion p = potions.get(i);
+            System.out.println("" + (i + 1) + ". " + p.getName());
+        }
+        System.out.print("Choose potion index (0 to cancel): ");
+        String line = in.nextLine().trim();
+        int idx;
+        try {
+            idx = Integer.parseInt(line);
+        } catch (NumberFormatException e) {
+            System.out.println(Color.error("Invalid index."));
+            return;
+        }
+        if (idx == 0) {
+            return;
+        }
+        if (idx < 1 || idx > potions.size()) {
+            System.out.println(Color.error("Index out of range."));
+            return;
+        }
+        Potion chosen = potions.get(idx - 1);
+        hero.usePotion(chosen);
+        System.out.println(Color.success(hero.getDisplayName() + " used " + chosen.getName() + "."));
     }
 
     /**
@@ -395,9 +595,9 @@ public class Game {
 
         Tile tile = board.getCurrentTile();
         if (tile.hasMarket()) {
-            System.out.println("You stepped on a MARKET tile. Press 'M' to enter.");
+			System.out.println(Color.success("You stepped on a MARKET tile. Press 'M' to enter."));
         } else {
-            System.out.println("You are on a COMMON tile.");
+			System.out.println(Color.warning("You are on a COMMON tile."));
             maybeTriggerBattle();
         }
     }
@@ -406,11 +606,11 @@ public class Game {
      * Show detailed info about the current party.
      */
     private void showPartyInfo() {
-        System.out.println("=== Party Info ===");
+		System.out.println(Color.title("=== Party Info ==="));
         for (Hero h : party) {
             System.out.println(h);
         }
-        System.out.println("==================");
+		System.out.println(Color.title("=================="));
     }
 
     /**
@@ -419,12 +619,14 @@ public class Game {
     private void enterMarketIfPossible() {
         Tile tile = board.getCurrentTile();
         if (!tile.hasMarket()) {
-            System.out.println("You are not on a market tile.");
+			System.out.println(Color.error("You are not on a market tile."));
             return;
         }
-
-        System.out.println("Entering market...");
-        // TODO: call Market system when it’s implemented
+		System.out.println(Color.success("Entering market..."));
+        if (market == null) {
+            market = new Market();
+        }
+        market.run(party, in);
     }
 
     /**
@@ -436,7 +638,7 @@ public class Game {
             return;
         }
 
-        System.out.println("A group of monsters appears!");
+		System.out.println(Color.warning("A group of monsters appears!"));
 
         List<Monster> encounter = createEncounter();
         if (encounter.isEmpty()) {
@@ -449,7 +651,7 @@ public class Game {
 
         // If all heroes fainted, end the game.
         if (allHeroesFainted()) {
-            System.out.println("Your entire party has fallen...");
+			System.out.println(Color.error("Your entire party has fallen..."));
             running = false;
         }
     }
@@ -480,6 +682,10 @@ public class Game {
         return result;
     }
 
+    /**
+     * Get the maximum level among all heroes in the party.
+     * @return the highest hero level
+     */
     private int getMaxHeroLevel() {
         int max = 1;
         for (Hero h : party) {
@@ -493,6 +699,8 @@ public class Game {
     /**
      * Create a single random monster for a given level
      * by sampling from loaded monsters and building a fresh instance.
+     * @param level the desired monster level
+     * @return a new Monster instance, or null if none could be created
      */
     private Monster createRandomMonsterForLevel(int level) {
         // 0 = Dragon, 1 = Spirit, 2 = Exoskeleton
@@ -503,6 +711,10 @@ public class Game {
                 case 0:
                     if (allDragons != null && !allDragons.isEmpty()) {
                         Dragon protoD = allDragons.get(rand.nextInt(allDragons.size()));
+                        // For very low-level parties, avoid the most extreme dragons
+                        if (level <= 2 && (protoD.getBaseDamage() > 500 || protoD.getDefense() > 600)) {
+                            break; // pick another monster type
+                        }
                         return new Dragon(
                                 protoD.getName(),
                                 level,
@@ -515,6 +727,9 @@ public class Game {
                 case 1:
                     if (allSpirits != null && !allSpirits.isEmpty()) {
                         Spirit protoS = allSpirits.get(rand.nextInt(allSpirits.size()));
+                        if (level <= 2 && (protoS.getBaseDamage() > 500 || protoS.getDefense() > 600)) {
+                            break;
+                        }
                         return new Spirit(
                                 protoS.getName(),
                                 level,
@@ -527,6 +742,9 @@ public class Game {
                 default:
                     if (allExoskeletons != null && !allExoskeletons.isEmpty()) {
                         Exoskeleton protoE = allExoskeletons.get(rand.nextInt(allExoskeletons.size()));
+                        if (level <= 2 && (protoE.getBaseDamage() > 500 || protoE.getDefense() > 600)) {
+                            break;
+                        }
                         return new Exoskeleton(
                                 protoE.getName(),
                                 level,

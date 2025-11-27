@@ -7,6 +7,7 @@ import legends.items.Inventory;
 import legends.items.Potion;
 import legends.items.Spell;
 import legends.items.Weapon;
+import legends.utilities.Color;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,8 @@ public class Battle {
     private List<Hero> heroes;
     private List<Monster> monsters;
     private Scanner in;
+    // Flag indicating the party has successfully fled this battle.
+    private boolean fleeing = false;
 
     /**
      * Constructor for Battle
@@ -34,16 +37,23 @@ public class Battle {
         this.in = new Scanner(System.in);
     }
 
-    // start the battle
-    public void start() {
-        System.out.println("=== BATTLE START ===");
-        System.out.println("Heroes vs Monsters!");
+        // start the battle
+        public void start() {
+		System.out.println(Color.title("=== BATTLE START ==="));
+		System.out.println(Color.title("Heroes vs Monsters!"));
 
         // Main battle loop
-        while (!allHeroesFainted() && !allMonstersDead()) {
+        while (!allHeroesFainted() && !allMonstersDead() && !fleeing) {
             printStatus();
 
             heroesTurn();
+            // If the party successfully fled during the heroes' turn,
+            // end the battle immediately before monsters can act.
+            if (fleeing) {
+                System.out.println(Color.warning("The party has escaped from the battle."));
+                break;
+            }
+
             if (allMonstersDead()) {
                 break;
             }
@@ -53,20 +63,22 @@ public class Battle {
         }
 
         if (allMonstersDead()) {
-            System.out.println("Heroes win the battle!");
+            System.out.println(Color.success("Heroes win the battle!"));
             handleVictoryRewards();
+        } else if (fleeing) {
+            System.out.println(Color.warning("The party successfully fled the battle."));
         } else {
-            System.out.println("All heroes have fainted... Game Over.");
+            System.out.println(Color.error("All heroes have fainted... Game Over."));
         }
 
-        System.out.println("=== BATTLE END ===");
+        System.out.println(Color.title("=== BATTLE END ==="));
     }
 
     /* ================= HERO & MONSTER TURN ================= */
 
-    // Handles all heroes' turns
-    private void heroesTurn() {
-        System.out.println("\n--- Heroes' Turn ---");
+        // Handles all heroes' turns
+        private void heroesTurn() {
+		System.out.println(Color.title("\n--- Heroes' Turn ---"));
         for (Hero h : heroes) {
             if (isHeroFainted(h)) {
                 continue;
@@ -85,13 +97,12 @@ public class Battle {
      */
     private void heroAction(Hero hero) {
         while (true) {
-            System.out.println("\nIt's " + hero.getName() + "'s turn.");
+            System.out.println("\nIt's " + hero.getDisplayName() + "'s turn.");
             System.out.println("1. Attack");
             System.out.println("2. Cast Spell");
             System.out.println("3. Use Potion");
             System.out.println("4. Change Equipment");
-            System.out.println("5. Show Info");
-            System.out.println("6. Skip Turn");
+            System.out.println("5. Run");
             System.out.print("Choose action: ");
 
             String line = in.nextLine().trim();
@@ -105,22 +116,35 @@ public class Battle {
 
             switch (choice) {
                 case 1:
+                    // Regular attack always consumes the hero's turn
                     handleAttack(hero);
                     return;
                 case 2:
-                    handleCastSpell(hero);
-                    return;
+                    // Only consume the turn if a spell was actually cast
+                    if (handleCastSpell(hero)) {
+                        return;
+                    }
+                    // otherwise, re-show the action menu
+                    break;
                 case 3:
-                    handleUsePotion(hero);
-                    return;
+                    // Only consume the turn if a potion was actually used
+                    if (handleUsePotion(hero)) {
+                        return;
+                    }
+                    // otherwise, re-show the action menu
+                    break;
                 case 4:
+                    // Changing equipment does NOT consume the turn; after
+                    // equipping, let the player choose another action.
                     handleChangeEquipment(hero);
-                    return;
+                    break;
                 case 5:
-                    printStatus();
-                    break; // stay in this hero's menu
-                case 6:
-                    System.out.println(hero.getName() + " skips the turn.");
+                    // Attempt to flee the battle for the whole party.
+                    if (attemptRunAway()) {
+                        // On successful run, end the battle loop via flag.
+                        fleeing = true;
+                    }
+                    // Whether we succeed or fail, this hero's turn is done.
                     return;
                 default:
                     System.out.println("Invalid choice.");
@@ -130,7 +154,7 @@ public class Battle {
 
     // Handles all monsters' turns
     private void monstersTurn() {
-        System.out.println("\n--- Monsters' Turn ---");
+		System.out.println(Color.title("\n--- Monsters' Turn ---"));
 
         for (Monster m : monsters) {
             if (m.isDead()) {
@@ -141,24 +165,57 @@ public class Battle {
                 return;
             }
 
-            System.out.println(m.getName() + " attacks " + target.getName() + "!");
+            System.out.println(Color.monsterName(m.getDisplayName()) + " attacks " + Color.heroName(target.getDisplayName()) + "!" );
 
             // hero dodge
             double dodgeProb = target.getDodgeChance();
             if (Math.random() < dodgeProb) {
-                System.out.println(target.getName() + " dodged the attack!");
+                System.out.println(Color.heroName(target.getDisplayName()) + " dodged the attack!");
                 continue;
             }
 
             double damage = m.attack(); // monster's base damage
-            // hero.receiveDamage handles armor reduction etc.
-            target.receiveDamage(damage);
 
-            System.out.println(target.getName() + " took " + damage + " damage.");
+            double beforeHp = target.getHp();
+            target.receiveDamage(damage);
+            double afterHp = target.getHp();
+            double lost = beforeHp - afterHp;
+            if (lost < 0) {
+                lost = 0;
+            }
+            lost = Math.round(lost * 10.0) / 10.0;
+
+            System.out.println(Color.heroName(target.getDisplayName()) + " took " + lost + " damage.");
 
             if (isHeroFainted(target)) {
-                System.out.println(target.getName() + " has fainted!");
+                System.out.println(Color.error(target.getDisplayName() + " has fainted!"));
             }
+        }
+    }
+
+    /**
+     * Attempt to flee from battle for the entire party.
+     * Returns true on success, false on failure.
+     * On success, applies a small gold penalty to each non-fainted hero
+     * and sets the fleeing flag so the main loop ends.
+     */
+    private boolean attemptRunAway() {
+        double chance = 0.6; // 60% success chance
+        if (Math.random() < chance) {
+            System.out.println("You successfully fled from battle, but lost some gold in the chaos!");
+
+            for (Hero h : heroes) {
+                if (!h.isFainted() && h.getGold() > 0) {
+                    double loss = h.getGold() * 0.1; // lose 10% of current gold
+                    h.spendGold(loss);
+                }
+            }
+
+            fleeing = true;
+            return true;
+        } else {
+            System.out.println("You failed to escape!");
+            return false;
         }
     }
 
@@ -175,22 +232,48 @@ public class Battle {
             System.out.println("No valid target.");
             return;
         }
+
+        double beforeHp = target.getHp();
         hero.attack(target);
-        if (target.isDead()) {
-            System.out.println(target.getName() + " is defeated!");
+        double afterHp = target.getHp();
+        double lost = beforeHp - afterHp;
+        if (lost <= 0) {
+            // Treat as a dodge or fully negated hit
+            System.out.println(
+                    Color.heroName(hero.getDisplayName()) +
+                    " attacked " +
+                    Color.monsterName(target.getDisplayName()) +
+                    ", but it dodged!"
+            );
+        } else {
+            // Round to one decimal place for a clean message
+            lost = Math.round(lost * 10.0) / 10.0;
+
+            System.out.println(
+                    Color.heroName(hero.getDisplayName()) +
+                    " attacked " +
+                    Color.monsterName(target.getDisplayName()) +
+                    " for " + lost + " damage!"
+            );
+
+            if (target.isDead()) {
+                System.out.println(Color.success(Color.monsterName(target.getDisplayName()) + " is defeated!"));
+            }
         }
     }
 
     /**
      * Handles the cast spell action for a hero.
+     * 
      * @param hero The hero performing the spell cast.
+     * @return true if a spell was successfully cast, false otherwise (no spells or invalid choice).
      */
-    private void handleCastSpell(Hero hero) {
+    private boolean handleCastSpell(Hero hero) {
         Inventory inv = hero.getInventory();
         List<Spell> spells = inv.getSpells();
         if (spells.isEmpty()) {
             System.out.println("No spells in inventory.");
-            return;
+            return false;
         }
 
         System.out.println("Spells:");
@@ -205,38 +288,41 @@ public class Battle {
             idx = Integer.parseInt(line);
         } catch (NumberFormatException e) {
             System.out.println("Invalid index.");
-            return;
+            return false;
         }
 
         if (idx < 1 || idx > spells.size()) {
             System.out.println("Index out of range.");
-            return;
+            return false;
         }
 
         Spell s = spells.get(idx - 1);
         Monster target = chooseMonsterTarget();
         if (target == null) {
             System.out.println("No valid target.");
-            return;
+            return false;
         }
 
         hero.castSpell(s, target);
         if (target.isDead()) {
             System.out.println(target.getName() + " is defeated!");
         }
+
+        return true;
     }
 
     /**
      * Handles the use potion action for a hero.
      * 
      * @param hero The hero using the potion.
+     * @return true if a potion was successfully used, false otherwise
      */
-    private void handleUsePotion(Hero hero) {
+    private boolean handleUsePotion(Hero hero) {
         Inventory inv = hero.getInventory();
         List<Potion> potions = inv.getPotions();
         if (potions.isEmpty()) {
             System.out.println("No potions in inventory.");
-            return;
+            return false;
         }
 
         System.out.println("Potions:");
@@ -251,17 +337,19 @@ public class Battle {
             idx = Integer.parseInt(line);
         } catch (NumberFormatException e) {
             System.out.println("Invalid index.");
-            return;
+            return false;
         }
 
         if (idx < 1 || idx > potions.size()) {
             System.out.println("Index out of range.");
-            return;
+            return false;
         }
 
         Potion p = potions.get(idx - 1);
         hero.usePotion(p);
         System.out.println(hero.getName() + " used " + p.getName() + ".");
+
+        return true;
     }
 
     /**
@@ -348,16 +436,22 @@ public class Battle {
 
     /* ===================== STATUS & HELPERS ===================== */
 
-    // Print current status of heroes and monsters
+    // Print current status of heroes and monsters (heroes via Hero.toString for simplicity)
     private void printStatus() {
         System.out.println("\n--- Battle Status ---");
         System.out.println("Heroes:");
         for (Hero h : heroes) {
-            System.out.println("  " + h);
+            if (!h.isFainted()) {
+                System.out.println("  " + h);
+            }
         }
         System.out.println("Monsters:");
         for (Monster m : monsters) {
-            System.out.println("  " + m);
+            if (!m.isDead()) {
+                String stats = String.format("[Lvl %d | HP=%.1f | DMG=%.1f | DEF=%.1f | Dodge=%.1f%%]",
+                        m.getLevel(), m.getHp(), m.getBaseDamage(), m.getDefense(), m.getDodgeChance());
+                System.out.println("  " + Color.monsterName(m.getDisplayName()) + " " + stats);
+            }
         }
         System.out.println("---------------------");
     }
@@ -376,7 +470,10 @@ public class Battle {
 
         System.out.println("Choose a monster to target:");
         for (int i = 0; i < alive.size(); i++) {
-            System.out.println((i + 1) + ". " + alive.get(i));
+            Monster m = alive.get(i);
+            String stats = String.format("[Lvl %d, HP=%.1f, DMG=%.1f, DEF=%.1f, Dodge=%.1f%%]",
+                    m.getLevel(), m.getHp(), m.getBaseDamage(), m.getDefense(), m.getDodgeChance());
+            System.out.println((i + 1) + ". " + Color.monsterName(m.getDisplayName()) + " " + stats);
         }
         System.out.print("Index: ");
 

@@ -6,6 +6,7 @@ import legends.items.Inventory;
 import legends.items.Potion;
 import legends.items.Spell;
 import legends.items.Weapon;
+import legends.utilities.Color;
 
 /**
  * Abstract base class for all hero types in the game.
@@ -22,6 +23,7 @@ public abstract class Hero {
     protected double agility;
     protected double dexterity;
     protected double gold;
+
 
     // ----- Equipment / inventory -----
     protected Inventory inventory;
@@ -82,8 +84,17 @@ public abstract class Hero {
             return;
         }
 
-        p.applyTo(this);          // e.g. method on Potion
-        inventory.removePotion(p);
+        if (!p.isUsable()) {
+            System.out.println("That potion is empty and crumbles to dust.");
+            inventory.removePotion(p);
+            return;
+        }
+
+        p.applyTo(this);
+        if (!p.isUsable()) {
+            // Remove once it has no uses left
+            inventory.removePotion(p);
+        }
     }
 
     // ----- Equipment management -----
@@ -139,12 +150,12 @@ public abstract class Hero {
     }
 
     /**
-     * Revive the hero at half health and mana.
+      * Revive the hero at half health and mana.
      */
     public void reviveAtHalf() {
-        // when battle ends and hero fainted
-        hp = (level * 100) / 2.0; 
-        mp = mp / 2.0;
+          // when battle ends and hero fainted
+          hp = (level * 100) / 2.0;
+          mp = mp / 2.0;
     }
 
     /**
@@ -155,8 +166,19 @@ public abstract class Hero {
         if (isFainted()) {
             return;
         }
+        // Regenerate 10% of current HP/MP, but do not let HP exceed
+        // the standard base value for this level (level * 100).
         hp *= 1.1;
+        // Round to one decimal place to avoid floating-point artifacts
+        hp = Math.round(hp * 10.0) / 10.0;
+        double maxHp = level * 100.0;
+        if (hp > maxHp) {
+            hp = maxHp;
+        }
+
         mp *= 1.1;
+        // Round to one decimal place for consistency
+        mp = Math.round(mp * 10.0) / 10.0;
     }
 
 
@@ -216,8 +238,17 @@ public abstract class Hero {
      * @return dodge chance as a decimal (e.g., 0.1 for 10%)
      */
     public double getDodgeChance() {
-        // from spec: hero dodge chance
-        return agility * 0.002;
+    // Example rule from spec: dodge = agility * 0.002.
+    // We halve it to make battles feel less dodge-heavy while
+    // preserving the same scaling relationship.
+    double prob = agility * 0.002 * 0.5; // half of the original chance
+        if (prob < 0) {
+            prob = 0;
+        } else if (prob > 0.5) {
+            // cap at 50% so heroes don't become unhittable at high agility
+            prob = 0.5;
+        }
+        return prob;
     }
 
     // ----- Getters -----
@@ -229,6 +260,22 @@ public abstract class Hero {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Get a display-friendly version of the hero's name.
+     * <p>
+     * By default, this replaces underscores with spaces so that names like
+     * "Gaerdal_Ironhand" show up as "Gaerdal Ironhand" in the terminal.
+     * The underlying stored name (used for data loading, etc.) is unchanged.
+     *
+     * @return display-formatted hero name
+     */
+    public String getDisplayName() {
+        if (name == null) {
+            return "";
+        }
+        return name.replace('_', ' ');
     }
 
     /**
@@ -257,6 +304,7 @@ public abstract class Hero {
     public double getMp() {
         return mp;
     }
+
 
     /**
      * Get the hero's strength attribute.
@@ -321,20 +369,67 @@ public abstract class Hero {
         return equippedArmor;
     }
 
+    // ----- Setters (needed for Potions) -----
+
+    /**
+     * Set the hero's health points (HP).
+     * @param hp the new HP value
+     */
+    public void setHp(double hp) {
+        // HP is not capped per spec; setter is a simple assignment
+        this.hp = hp;
+    }
+
+    /**
+     * Set the hero's mana points (MP).
+     * @param mp the new MP value
+     */
+    public void setMp(double mp) {
+        // MP is not capped per spec; setter is a simple assignment
+        this.mp = mp;
+    }
+
+    /**
+     * Set the hero's strength attribute.
+     * @param strength the new strength value
+     */
+    public void setStrength(double strength) {
+        this.strength = strength;
+    }
+
+    /**
+     * Set the hero's dexterity attribute.
+     * @param dexterity the new dexterity value
+     */
+    public void setDexterity(double dexterity) {
+        this.dexterity = dexterity;
+    }
+
+    /**
+     * Set the hero's agility attribute.
+     * @param agility the new agility value
+     */
+    public void setAgility(double agility) {
+        this.agility = agility;
+    }
+
     /**
      * Returns a string representation of the hero.
-     * 
      * @return string representation of the hero
      */
     @Override
     public String toString() {
-        return name +
-                " [Lvl " + level +
-                ", HP=" + hp +
-                ", MP=" + mp +
-                ", STR=" + strength +
-                ", DEX=" + dexterity +
-                ", AGI=" + agility +
-                ", Gold=" + gold + "]";
+        String display = getDisplayName();
+        return String.format(
+                "%s [Lvl %d | HP=%.1f | MP=%.1f | STR=%.1f | DEX=%.1f | AGI=%.1f | Gold=%s]",
+                Color.heroName(display),
+                level,
+                hp,
+                mp,
+                strength,
+                dexterity,
+                agility,
+                Color.gold(gold)
+        );
     }
 }

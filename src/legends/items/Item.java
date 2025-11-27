@@ -7,6 +7,8 @@ public abstract class Item {
     protected String name;
     protected double cost;
     protected int requiredLevel;
+    // How many uses remain before the item becomes unusable (0 = broken/empty).
+    protected int remainingUses;
 
     /**
      * Constructor for an item.
@@ -19,6 +21,7 @@ public abstract class Item {
         this.name = name;
         this.cost = cost;
         this.requiredLevel = requiredLevel;
+        this.remainingUses = -1; // -1 means "infinite" or not tracked (e.g., base items)
     }
 
     /**
@@ -44,6 +47,39 @@ public abstract class Item {
      */
     public int getRequiredLevel() {
         return requiredLevel;
+    }
+
+    /**
+     * Get how many uses remain for this item.
+     * A negative value (e.g. -1) means the item does not track uses
+     * and can be treated as having infinite durability.
+     */
+    public int getRemainingUses() {
+        return remainingUses;
+    }
+
+    /**
+     * Set the remaining uses of this item.
+     */
+    public void setRemainingUses(int uses) {
+        this.remainingUses = uses;
+    }
+
+    /**
+     * Returns true if this item is still usable (has uses left or is infinite-use).
+     */
+    public boolean isUsable() {
+        return remainingUses != 0;
+    }
+
+    /**
+     * Decrement remaining uses if they are being tracked (> 0).
+     * When remainingUses goes to 0, the item is considered broken/empty.
+     */
+    public void consumeUse() {
+        if (remainingUses > 0) {
+            remainingUses--;
+        }
     }
     
     /**

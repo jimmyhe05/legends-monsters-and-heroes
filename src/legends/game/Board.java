@@ -2,6 +2,8 @@ package legends.game;
 
 import java.util.Random;
 
+import legends.utilities.Color;
+
 /**
  * Class representing the game board.
  */
@@ -26,12 +28,6 @@ public class Board {
 
     // was the last successful move onto a tile where this is the first visit?
     private boolean lastMoveFirstVisit = false;
-    private static final String RESET = "\u001B[0m";
-    private static final String RED = "\u001B[31m";
-    private static final String GREEN = "\u001B[32m";
-    private static final String YELLOW = "\u001B[33m";
-    private static final String CYAN = "\u001B[36m";
-    private static final String WHITE = "\u001B[37m";
 
     /**
      * Create a board with default distribution:
@@ -320,29 +316,29 @@ public class Board {
      * '.' for unvisited common tiles (white)
      */
     public void display() {
-        System.out.println("=== World Map ===");
+        System.out.println(Color.title("=== World Map ==="));
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 String cell;
                 if (i == partyRow && j == partyCol) {
-                    cell = YELLOW + "H" + RESET;
+                    cell = Color.YELLOW + "H" + Color.RESET;
                 } else {
                     Tile t = grid[i][j];
                     if (t instanceof MarketTile) {
-                        cell = GREEN + "M" + RESET;
+                        cell = Color.GREEN + "M" + Color.RESET;
                     } else if (t instanceof InaccessibleTile) {
-                        cell = RED + "X" + RESET;
+                        cell = Color.RED + "X" + Color.RESET;
                     } else {
                         // common tile
                         boolean tileVisited = isVisited(i, j); // from the new visited-tracking
                         char symbol = tileVisited ? '*' : '.';
-                        cell = (tileVisited ? CYAN : WHITE) + symbol + RESET;
+                        cell = (tileVisited ? Color.CYAN : Color.WHITE) + symbol + Color.RESET;
                     }
                 }
                 System.out.print("| " + cell + " ");
             }
             System.out.println("|");
         }
-        System.out.println("=================");
+        System.out.println(Color.title("================="));
     }
 }

@@ -36,7 +36,11 @@ public abstract class Monster {
      * @return damage dealt
      */
     public double attack() {
-        return baseDamage;
+        // Apply a global scaling factor so monsters are not overly lethal,
+        // especially at low hero levels. This keeps relative strengths
+        // between monsters while making battles more survivable.
+        double scalingFactor = 0.5; // 50% of the listed base damage
+        return baseDamage * scalingFactor;
     }
 
     /**
@@ -45,10 +49,24 @@ public abstract class Monster {
      * @param dmg damage to apply
      */
     public void takeDamage(double dmg) {
-        double reduced = dmg - defense;
-        if (reduced < 0) {
-            reduced = 0;
+        // Treat defense as a softer percentage-based damage reduction.
+        // Higher defense means more reduction, but damage is never fully negated.
+
+        // Map defense into a reduction factor in [0, 0.8]. Larger denominator
+        // makes defense grow more slowly, so early-game battles remain fair.
+        double reductionFactor = defense / (defense + 3000.0);
+        if (reductionFactor < 0) {
+            reductionFactor = 0;
+        } else if (reductionFactor > 0.8) {
+            reductionFactor = 0.8; // cap at 80% damage reduction
         }
+
+        double reduced = dmg * (1.0 - reductionFactor);
+        // Always do at least 1 point of chip damage when an attack lands
+        if (reduced < 1.0 && dmg > 0) {
+            reduced = 1.0;
+        }
+
         hp -= reduced;
         if (hp < 0) {
             hp = 0;
@@ -70,7 +88,16 @@ public abstract class Monster {
      * @return dodge probability
      */
     public double getDodgeProbability() {
-        return dodgeChance * 0.01;
+        // Example rule from spec: monster dodge = dodgeChance * 0.01.
+        // We halve it to reduce excessive dodging while preserving scaling.
+        double prob = (dodgeChance * 0.01) * 0.5;
+        // Clamp to a reasonable range so monsters don't dodge almost everything
+        if (prob < 0) {
+            prob = 0;
+        } else if (prob > 0.5) {
+            prob = 0.5;
+        }
+        return prob;
     }
 
     // ----- Getters -----
@@ -82,6 +109,22 @@ public abstract class Monster {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Get a display-friendly version of the monster's name.
+     * <p>
+     * By default, this replaces underscores with spaces so that names like
+     * "Ancient_Black_Dragon" show up as "Ancient Black Dragon" in the
+     * terminal output. The stored name remains unchanged for data purposes.
+     *
+     * @return display-formatted monster name
+     */
+    public String getDisplayName() {
+        if (name == null) {
+            return "";
+        }
+        return name.replace('_', ' ');
     }
 
     /**
@@ -163,11 +206,14 @@ public abstract class Monster {
      */
     @Override
     public String toString() {
-        return name +
-                " [Lvl " + level +
-                ", HP=" + hp +
-                ", DMG=" + baseDamage +
-                ", DEF=" + defense +
-                ", Dodge=" + dodgeChance + "%]";
+    return String.format(
+        "%s [Lvl %d, HP=%.1f, DMG=%.1f, DEF=%.1f, Dodge=%.1f%%]",
+        getDisplayName(),
+        level,
+        hp,
+        baseDamage,
+        defense,
+        dodgeChance
+    );
     }
 }

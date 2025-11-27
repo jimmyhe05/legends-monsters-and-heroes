@@ -22,6 +22,8 @@ public abstract class Spell extends Item {
         super(name, cost, requiredLevel);
         this.baseDamage = baseDamage;
         this.manaCost = manaCost;
+        // Spells are consumable: start with 1 use by default.
+        this.remainingUses = 1;
     }
 
     /**

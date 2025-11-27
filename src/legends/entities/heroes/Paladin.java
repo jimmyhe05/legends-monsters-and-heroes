@@ -28,7 +28,7 @@ public class Paladin extends Hero {
                    double startingExperience) {
 
         super(name,
-              1,                         // level
+              1,                   // level
               1 * 100.0,                 // hp
               mana,                      // mp
               strength,
@@ -59,12 +59,12 @@ public class Paladin extends Hero {
 
         double dodgeProb = m.getDodgeProbability();
         if (Math.random() < dodgeProb) {
-            System.out.println(name + " attacked " + m.getName() + " but it dodged!");
+            // message is handled in Battle.handleAttack for consistency
             return;
         }
 
         m.takeDamage(rawDamage);
-        System.out.println(name + " attacked " + m.getName() + " for " + rawDamage + " damage!");
+        // exact damage and message are handled in Battle.handleAttack
     }
 
     /**
