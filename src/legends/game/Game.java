@@ -1,25 +1,24 @@
 package legends.game;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 import legends.entities.heroes.Hero;
 import legends.entities.heroes.HeroTeam;
 import legends.entities.heroes.Paladin;
 import legends.entities.heroes.Sorcerer;
 import legends.entities.heroes.Warrior;
+import legends.entities.monsters.Dragon;
+import legends.entities.monsters.Exoskeleton;
 import legends.entities.monsters.Monster;
 import legends.entities.monsters.MonsterFactory;
-import legends.entities.monsters.Dragon;
 import legends.entities.monsters.Spirit;
-import legends.entities.monsters.Exoskeleton;
 import legends.items.Armor;
 import legends.items.Inventory;
 import legends.items.Potion;
 import legends.items.Weapon;
 import legends.utilities.Color;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
 
 /**
  * Main class representing the Legends game.

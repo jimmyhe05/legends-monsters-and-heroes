@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
-
 import legends.entities.heroes.Hero;
 import legends.items.Armor;
 import legends.items.Inventory;

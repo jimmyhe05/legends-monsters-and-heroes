@@ -1,5 +1,8 @@
 package legends.game;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 import legends.entities.heroes.Hero;
 import legends.entities.monsters.Monster;
 import legends.items.Armor;
@@ -8,10 +11,6 @@ import legends.items.Potion;
 import legends.items.Spell;
 import legends.items.Weapon;
 import legends.utilities.Color;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
 /**
  * Class representing a battle between heroes and monsters.
