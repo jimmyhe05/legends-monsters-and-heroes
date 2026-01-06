@@ -16,11 +16,18 @@ import legends.items.Armor;
 import legends.items.FireSpell;
 import legends.items.IceSpell;
 import legends.items.LightningSpell;
+import legends.items.AttributePotion;
+import legends.items.HealthPotion;
+import legends.items.ManaPotion;
 import legends.items.Potion;
 import legends.items.Spell;
 import legends.items.Weapon;
 
 public class DataLoader {
+    /**
+     * Utility class for loading heroes, monsters, and items from the assignment data files.
+     * Each loader parses rows from text tables into domain objects.
+     */
     
     /* ====================== HEROES ====================== */
 
@@ -31,7 +38,7 @@ public class DataLoader {
      * @return list of Warrior objects
      */
     public static List<Warrior> loadWarriors(String path) {
-        List<Warrior> warriors = new ArrayList<Warrior>();
+    List<Warrior> warriors = new ArrayList<>();
         BufferedReader br = null;
 
         try {
@@ -78,7 +85,7 @@ public class DataLoader {
      * @return list of Paladin objects
      */
     public static List<Paladin> loadPaladins(String path) {
-        List<Paladin> paladins = new ArrayList<Paladin>();
+    List<Paladin> paladins = new ArrayList<>();
         BufferedReader br = null;
         
         try {
@@ -124,7 +131,7 @@ public class DataLoader {
      * @return list of Sorcerer objects
      */
     public static List<Sorcerer> loadSorcerers(String path) {
-        List<Sorcerer> sorcerers = new ArrayList<Sorcerer>();
+    List<Sorcerer> sorcerers = new ArrayList<>();
         BufferedReader br = null;
 
         try {
@@ -172,7 +179,7 @@ public class DataLoader {
      * @return list of Dragon objects
      */
     public static List<Dragon> loadDragons(String path) {
-        List<Dragon> dragons = new ArrayList<Dragon>();
+    List<Dragon> dragons = new ArrayList<>();
         BufferedReader br = null;
 
         try {
@@ -217,7 +224,7 @@ public class DataLoader {
      * @return list of Spirit objects
      */
     public static List<Spirit> loadSpirits(String path) {
-        List<Spirit> spirits = new ArrayList<Spirit>();
+    List<Spirit> spirits = new ArrayList<>();
         BufferedReader br = null;
         
         try {
@@ -262,7 +269,7 @@ public class DataLoader {
      * @return list of Exoskeleton objects
      */
     public static List<Exoskeleton> loadExoskeletons(String path) {
-        List<Exoskeleton> exos = new ArrayList<Exoskeleton>();
+    List<Exoskeleton> exos = new ArrayList<>();
         BufferedReader br = null;
 
         try {
@@ -309,7 +316,7 @@ public class DataLoader {
      * @return list of Weapon objects
      */
     public static List<Weapon> loadWeapons(String path) {
-        List<Weapon> weapons = new ArrayList<Weapon>();
+    List<Weapon> weapons = new ArrayList<>();
         BufferedReader br = null;
 
         try {
@@ -354,7 +361,7 @@ public class DataLoader {
      * @return list of Armor objects
      */
     public static List<Armor> loadArmors(String path) {
-        List<Armor> armors = new ArrayList<Armor>();
+    List<Armor> armors = new ArrayList<>();
         BufferedReader br = null;
 
         try {
@@ -398,7 +405,7 @@ public class DataLoader {
      * @return list of Potion objects
      */
     public static List<Potion> loadPotions(String path) {
-        List<Potion> potions = new ArrayList<Potion>();
+    List<Potion> potions = new ArrayList<>();
         BufferedReader br = null;
 
         try {
@@ -433,7 +440,14 @@ public class DataLoader {
                     attr.append(parts[i]);
                 }
 
-                Potion p = new Potion(name, cost, level, increase, attr.toString());
+                String attrs = attr.toString();
+                String key = attrs.toUpperCase().trim();
+                Potion p;
+                switch (key) {
+                    case "HEALTH" -> p = new HealthPotion(name, cost, level, increase);
+                    case "MANA" -> p = new ManaPotion(name, cost, level, increase);
+                    default -> p = new AttributePotion(name, cost, level, increase, attrs);
+                }
                 potions.add(p);
             }
         } catch (IOException e) {
@@ -451,7 +465,7 @@ public class DataLoader {
      * @return list of FireSpell objects
      */
     public static List<Spell> loadFireSpells(String path) {
-        List<Spell> spells = new ArrayList<Spell>();
+    List<Spell> spells = new ArrayList<>();
         BufferedReader br = null;
 
         try {
@@ -495,7 +509,7 @@ public class DataLoader {
      * @return list of IceSpell objects
      */
     public static List<Spell> loadIceSpells(String path) {
-        List<Spell> spells = new ArrayList<Spell>();
+    List<Spell> spells = new ArrayList<>();
         BufferedReader br = null;
 
         try {
@@ -539,7 +553,7 @@ public class DataLoader {
      * @return list of LightningSpell objects
      */
     public static List<Spell> loadLightningSpells(String path) {
-        List<Spell> spells = new ArrayList<Spell>();
+    List<Spell> spells = new ArrayList<>();
         BufferedReader br = null;
 
         try {

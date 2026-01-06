@@ -18,9 +18,10 @@ import java.util.Scanner;
  */
 public class Battle {
 
-    private List<Hero> heroes;
-    private List<Monster> monsters;
-    private Scanner in;
+    private final List<Hero> heroes;
+    private final List<Monster> monsters;
+    private final HeroTargetStrategy heroTargetStrategy;
+    private final Scanner in;
     // Flag indicating the party has successfully fled this battle.
     private boolean fleeing = false;
 
@@ -35,6 +36,7 @@ public class Battle {
         this.heroes = heroes;
         this.monsters = monsters;
         this.in = new Scanner(System.in);
+        this.heroTargetStrategy = new RandomHeroTargetStrategy();
     }
 
         // start the battle
@@ -102,7 +104,8 @@ public class Battle {
             System.out.println("2. Cast Spell");
             System.out.println("3. Use Potion");
             System.out.println("4. Change Equipment");
-            System.out.println("5. Run");
+            System.out.println("5. Inspect (free)");
+            System.out.println("6. Run");
             System.out.print("Choose action: ");
 
             String line = in.nextLine().trim();
@@ -115,18 +118,20 @@ public class Battle {
             }
 
             switch (choice) {
-                case 1:
-                    // Regular attack always consumes the hero's turn
-                    handleAttack(hero);
-                    return;
-                case 2:
+                case 1 -> {
+                    // Regular attack consumes the turn only when a valid target was chosen
+                    if (handleAttack(hero)) {
+                        return;
+                    }
+                }
+                case 2 -> {
                     // Only consume the turn if a spell was actually cast
                     if (handleCastSpell(hero)) {
                         return;
                     }
                     // otherwise, re-show the action menu
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     // Only consume the turn if a potion was actually used
                     if (handleUsePotion(hero)) {
                         // Show updated hero stats after potion effects
@@ -135,15 +140,18 @@ public class Battle {
                         return;
                     }
                     // otherwise, re-show the action menu
-                    break;
-                case 4:
+                }
+                case 4 -> {
                     // Changing equipment does NOT consume the turn; after
                     // equipping, let the player choose another action.
                     handleChangeEquipment(hero);
                     System.out.println("Updated equipment:");
                     System.out.println("  " + hero);
-                    break;
-                case 5:
+                }
+                case 5 ->
+                    // Free inspect action
+                    printStatus();
+                case 6 -> {
                     // Attempt to flee the battle for the whole party.
                     if (attemptRunAway()) {
                         // On successful run, end the battle loop via flag.
@@ -151,8 +159,8 @@ public class Battle {
                     }
                     // Whether we succeed or fail, this hero's turn is done.
                     return;
-                default:
-                    System.out.println("Invalid choice.");
+                }
+                default -> System.out.println("Invalid choice.");
             }
         }
     }
@@ -165,7 +173,7 @@ public class Battle {
             if (m.isDead()) {
                 continue;
             }
-            Hero target = chooseRandomAliveHero();
+            Hero target = heroTargetStrategy.selectTarget(heroes);
             if (target == null) {
                 return;
             }
@@ -231,15 +239,16 @@ public class Battle {
      * 
      * @param hero The hero performing the attack.
      */
-    private void handleAttack(Hero hero) {
+    private boolean handleAttack(Hero hero) {
         Monster target = chooseMonsterTarget();
         if (target == null) {
-            System.out.println("No valid target.");
-            return;
+            System.out.println("No valid target selected. Action cancelled.");
+            return false;
         }
 
         double beforeHp = target.getHp();
-        hero.attack(target);
+    hero.attack(target);
+    hero.consumeWeaponUse();
         double afterHp = target.getHp();
         double lost = beforeHp - afterHp;
         if (lost <= 0) {
@@ -265,6 +274,7 @@ public class Battle {
                 System.out.println(Color.success(Color.monsterName(target.getDisplayName()) + " is defeated!"));
             }
         }
+        return true;
     }
 
     /**
@@ -309,6 +319,12 @@ public class Battle {
         }
 
         hero.castSpell(s, target);
+        // Spells are consumable; remove once uses are gone
+        s.consumeUse();
+        if (!s.isUsable()) {
+            inv.removeSpell(s);
+            System.out.println(s.getName() + " has been consumed.");
+        }
         if (target.isDead()) {
             System.out.println(target.getName() + " is defeated!");
         }
@@ -365,77 +381,99 @@ public class Battle {
     private void handleChangeEquipment(Hero hero) {
         Inventory inv = hero.getInventory();
 
-        System.out.println("Change Equipment:");
-        System.out.println("1. Equip Weapon");
-        System.out.println("2. Equip Armor");
-        System.out.print("Choose: ");
+        while (true) {
+            System.out.println("Change Equipment:");
+            System.out.println("1. Equip Weapon");
+            System.out.println("2. Equip Armor");
+            System.out.println("0. Cancel");
+            System.out.print("Choose: ");
 
-        String line = in.nextLine().trim();
-        int choice;
-        try {
-            choice = Integer.parseInt(line);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input.");
-            return;
-        }
+            String line = in.nextLine().trim();
+            int choice;
+            try {
+                choice = Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input.");
+                continue;
+            }
 
-        switch (choice) {
-            case 1:
-                List<Weapon> weapons = inv.getWeapons();
-                if (weapons.isEmpty()) {
-                    System.out.println("No weapons available.");
-                    return;
-                }
-                System.out.println("Weapons:");
-                for (int i = 0; i < weapons.size(); i++) {
-                    System.out.println((i + 1) + ". " + weapons.get(i));
-                }
-                System.out.print("Choose weapon: ");
-                line = in.nextLine().trim();
-                int wIdx;
-                try {
-                    wIdx = Integer.parseInt(line);
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid index.");
-                    return;
-                }
-                if (wIdx < 1 || wIdx > weapons.size()) {
-                    System.out.println("Index out of range.");
-                    return;
-                }
-                hero.equipWeapon(weapons.get(wIdx - 1));
-                System.out.println(hero.getName() + " equipped " + weapons.get(wIdx - 1).getName());
-                break;
+            if (choice == 0) {
+                return;
+            }
 
-            case 2:
-                List<Armor> armors = inv.getArmors();
-                if (armors.isEmpty()) {
-                    System.out.println("No armor available.");
-                    return;
+            switch (choice) {
+                case 1 -> {
+                    List<Weapon> weapons = inv.getWeapons();
+                    if (weapons.isEmpty()) {
+                        System.out.println("No weapons available.");
+                        continue;
+                    }
+                    while (true) {
+                        System.out.println("Weapons:");
+                        for (int i = 0; i < weapons.size(); i++) {
+                            System.out.println((i + 1) + ". " + weapons.get(i));
+                        }
+                        System.out.print("Choose weapon (0=cancel): ");
+                        line = in.nextLine().trim();
+                        int wIdx;
+                        try {
+                            wIdx = Integer.parseInt(line);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid index.");
+                            continue;
+                        }
+                        if (wIdx == 0) {
+                            break;
+                        }
+                        if (wIdx < 1 || wIdx > weapons.size()) {
+                            System.out.println("Index out of range.");
+                            continue;
+                        }
+                        Weapon chosen = weapons.get(wIdx - 1);
+                        hero.equipWeapon(chosen);
+                        if (chosen.getHandsRequired() == 1) {
+                            System.out.print("Use two hands for extra damage? (y/n): ");
+                            String grip = in.nextLine().trim().toLowerCase();
+                            hero.setWeaponTwoHandedGrip(grip.startsWith("y"));
+                        }
+                        System.out.println(hero.getName() + " equipped " + chosen.getName());
+                        return;
+                    }
                 }
-                System.out.println("Armors:");
-                for (int i = 0; i < armors.size(); i++) {
-                    System.out.println((i + 1) + ". " + armors.get(i));
+                case 2 -> {
+                    List<Armor> armors = inv.getArmors();
+                    if (armors.isEmpty()) {
+                        System.out.println("No armor available.");
+                        continue;
+                    }
+                    while (true) {
+                        System.out.println("Armors:");
+                        for (int i = 0; i < armors.size(); i++) {
+                            System.out.println((i + 1) + ". " + armors.get(i));
+                        }
+                        System.out.print("Choose armor (0=cancel): ");
+                        line = in.nextLine().trim();
+                        int aIdx;
+                        try {
+                            aIdx = Integer.parseInt(line);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid index.");
+                            continue;
+                        }
+                        if (aIdx == 0) {
+                            break;
+                        }
+                        if (aIdx < 1 || aIdx > armors.size()) {
+                            System.out.println("Index out of range.");
+                            continue;
+                        }
+                        hero.equipArmor(armors.get(aIdx - 1));
+                        System.out.println(hero.getName() + " equipped " + armors.get(aIdx - 1).getName());
+                        return;
+                    }
                 }
-                System.out.print("Choose armor: ");
-                line = in.nextLine().trim();
-                int aIdx;
-                try {
-                    aIdx = Integer.parseInt(line);
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid index.");
-                    return;
-                }
-                if (aIdx < 1 || aIdx > armors.size()) {
-                    System.out.println("Index out of range.");
-                    return;
-                }
-                hero.equipArmor(armors.get(aIdx - 1));
-                System.out.println(hero.getName() + " equipped " + armors.get(aIdx - 1).getName());
-                break;
-
-            default:
-                System.out.println("Invalid choice.");
+                default -> System.out.println("Invalid choice.");
+            }
         }
     }
 
@@ -463,7 +501,7 @@ public class Battle {
 
     // Let the user choose a monster target
     private Monster chooseMonsterTarget() {
-        List<Monster> alive = new ArrayList<Monster>();
+    List<Monster> alive = new ArrayList<>();
         for (Monster m : monsters) {
             if (!m.isDead()) {
                 alive.add(m);
@@ -473,44 +511,34 @@ public class Battle {
             return null;
         }
 
-        System.out.println("Choose a monster to target:");
-        for (int i = 0; i < alive.size(); i++) {
-            Monster m = alive.get(i);
-            String stats = String.format("[Lvl %d, HP=%.1f, DMG=%.1f, DEF=%.1f, Dodge=%.1f%%]",
-                    m.getLevel(), m.getHp(), m.getBaseDamage(), m.getDefense(), m.getDodgeChance());
-            System.out.println((i + 1) + ". " + Color.monsterName(m.getDisplayName()) + " " + stats);
-        }
-        System.out.print("Index: ");
-
-        String line = in.nextLine().trim();
-        int idx;
-        try {
-            idx = Integer.parseInt(line);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid index.");
-            return null;
-        }
-
-        if (idx < 1 || idx > alive.size()) {
-            System.out.println("Index out of range.");
-            return null;
-        }
-        return alive.get(idx - 1);
-    }
-
-    // Choose a random alive hero for monster attacks
-    private Hero chooseRandomAliveHero() {
-        List<Hero> alive = new ArrayList<Hero>();
-        for (Hero h : heroes) {
-            if (!isHeroFainted(h)) {
-                alive.add(h);
+        while (true) {
+            System.out.println("Choose a monster to target:");
+            for (int i = 0; i < alive.size(); i++) {
+                Monster m = alive.get(i);
+                String stats = String.format("[Lvl %d, HP=%.1f, DMG=%.1f, DEF=%.1f, Dodge=%.1f%%]",
+                        m.getLevel(), m.getHp(), m.getBaseDamage(), m.getDefense(), m.getDodgeChance());
+                System.out.println((i + 1) + ". " + Color.monsterName(m.getDisplayName()) + " " + stats);
             }
+            System.out.print("Index (0=cancel): ");
+
+            String line = in.nextLine().trim();
+            int idx;
+            try {
+                idx = Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid index.");
+                continue;
+            }
+
+            if (idx == 0) {
+                return null;
+            }
+            if (idx < 1 || idx > alive.size()) {
+                System.out.println("Index out of range.");
+                continue;
+            }
+            return alive.get(idx - 1);
         }
-        if (alive.isEmpty()) {
-            return null;
-        }
-        int idx = (int) (Math.random() * alive.size());
-        return alive.get(idx);
     }
 
     // Check if all heroes have fainted

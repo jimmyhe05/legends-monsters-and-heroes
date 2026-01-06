@@ -2,6 +2,9 @@ package legends.utilities;
 
 import java.util.Scanner;
 
+/**
+ * Simple input helper for validated integer reads from System.in.
+ */
 public class InputUtil {
 
 	private static final Scanner SCANNER = new Scanner(System.in);

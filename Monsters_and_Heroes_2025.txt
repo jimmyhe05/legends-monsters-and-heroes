@@ -1,0 +1,293 @@
+CS 611 Legends: Monsters and Heroes  
+In this assignment you will  implement a role-playing  game in Java using object -oriented principles and 
+design . This is a magical game full of spells, monsters, and heroes . 
+The monsters and heroes  live in a fictional world . They do not get along and therefore fight each other. 
+Every time the heroes win, they gain experience and money. Heroes use the money to buy a variety of 
+items to aid them in their battle s with the monsters. When they accumulate enough experience,  they 
+level up , which improves  their skill s. The goal of the game is for the heroes to defeat monsters and  level 
+up indefinitely.  
+I. The World of Play  
+ 
+The world of the game is represented by a  fixed, square grid of spaces. The grid contains 
+three types of spaces:  
+• Inaccess ible spaces, which the heroes cannot enter  
+• Market spaces, where items can be bought or sold  
+• Common spaces, where battles can occur  
+Every time the heroes visit a common tile, there is a chance that they will engage in a battle 
+with the monsters. These monst ers are not created when the map is created. Every time the 
+heroes visit a space,  we "roll a di ce," and , if they are unlucky,  then the monsters are created 
+and the battle begins  immediately .  
+The party  of heroes is  always  located  in a specific space  of the grid . When not in a battle, the 
+party  can move up, down , left, or right  to an adjacent space . The player can enter the 
+market if the party is on a market space.  
+An example world size is 8 spaces by 8 spaces. In this size our sug gestion is to have 20% 
+inaccessible spaces , 30% market  spaces,  and 50% common spaces . 
+ 
+II. The Battle  
+ 
+The battle pits the party of heroes against a group of monsters. A battle consists of multiple 
+rounds, where the heroes and monsters each make moves. The figh t ends when the HP of 
+either all of the monsters or all of the heroes is zero. If the heroes win the fight, they earn 
+money and experience, potentially leveling up . If the monsters win the fight, the game is 
+over.  
+The monsters are created at the beginning of the battle. Their level  should be scaled to the 
+level  of the heroes.  There will be as many monsters as there are heroes . For example , if the 
+player begins their adventure with two heroes, then every battle will be against  two 
+monsters.  A mor e complex (and dangerous!) version might vary the number of monsters 
+encountered  and the monsters’  levels . 
+CS 611 Legends: Monsters and Heroes  
+The heroes  move first  in each round . During the heroes’ turn, the player chooses for e ach 
+hero whether they will do  one of the following : 
+• Attack, using the hero’s equipped weapon  
+• Cast a spell  from the hero’s inventory  
+• Use a potion from the hero’s inventory  
+• Equip a  weapon  or piece of armor  
+In addition, at any time during the heroes’ turn, the player can display the stat istics (ex. 
+strength, or base damage)  of a hero or a monster. This will not consume the turn.  Monsters 
+have a base dodge chance, allowing them to occasionally avoid taking damage from an 
+attack or a spell. If an attack or a spell lowers a monster’s HP to 0, that  monster is defeated 
+and removed from the battle.  
+After the heroes have made their moves, the monsters’ turn begins. The monsters will only 
+attack the heroes, as they do n ot have items or spells to use. Heroes also have a dodge 
+chance that will allow them to occasionally avoid taking damage from a monster’s attack. If 
+a monster’s attack lowers a hero’s HP to 0, that hero will faint. Fainted heroes cannot take 
+actions for the remainder of the battle.  
+During the round , clearly show to the player  who took what  action and that action’s  result . 
+For example: “Karl the Barbarian attacked the Red Dragon for 504 damage !”, “Merlin used a 
+health potion and recovered 300 HP!” , or “The Giant Bug attacked Wallace the Lame for 120 
+damage! Wallace the Lame fainted!”  
+At the end of each round  (after the monsters’ turn) , heroes that have not fainted  regain 
+some of their HP and mana.  
+The heroes win the battle if they defeat all of the monsters. If the heroes win , they gain 
+experience and money, and all fainted heroes are revived.  The experience gained should be 
+scaled to the level of the monsters defeated. For example, a level 1 monster may grant 1 
+experience point, while a level 10 monster may grant 10 experience  points. The money 
+gained should also be scaled to the level of the monsters defeated. For example, a level 1 
+monster may grant 100 gold, while a level 10 monster may grant 1000 gold. A fainted hero is 
+revived with half of their HP and mana, but they will not gain any gold or experience.  
+The battle has several ways that it can be fought. The simplest version would be a series of 
+1-on-1 fights between an individual monster and an individual hero. A more complex 
+version would be a full -team fight between the party and the monster group, where each 
+combatant chooses their target when attacking.  There are many variations of these two 
+ideas, as well as completely different ways to conduct the battle. The version you choose to 
+implement needs only to allow for all  of the behavior specified above, namely that it is 
+possible for all of the heroes to faint and for all of the monsters to be defeated.  
+ 
+ 
+CS 611 Legends: Monsters and Heroes  
+III. The Heroes and Monsters  
+The heroes of the world  have banded together into a party to fight monsters. At the start of 
+the game, allow the player to choose how many heroes to play with.  There should be a limit 
+to how many heroes there are in the party.  
+A hero has  several attributes:  
+• A name  
+• A level  with  an amount of experience points  
+• HP (hit points, the hero ’s in battle)  
+• MP ( mana  or magic points, for casting spells)  
+• A strength value  
+• A dexterity value  
+• An agility value  
+• An amount of gold  
+• An inventory of items  
+The example rules section at the end of this document contains several formulae you can 
+use for determining HP, MP, and the calculations involving strength, dexterity, and agility.  
+Level and experience points.  A hero has a level, representing how strong (or not) that hero 
+is. Experience points determine the hero’s level. A hero levels up after accumulating enough 
+experience  points. A hero’s skills increase when the hero levels up.  A hero never loses 
+experience. It accumulates over the course of the game.  
+HP. HP is t he hero’s current health. For simplicity, the hero’s HP  does not have to be capped  
+(have a maximum amount) . For example , in other games a hero has a maximum of 100  HP 
+and cannot go over this limit  (it is said to be capped). So, i f the hero currently has 90 hp and 
+uses a potion that increases  HP by 50 , then  the hero’s HP would now be come  100. In 
+Monsters and Heroes  you can assume that the hero’s HP will be come  140 in the same 
+scenario. The initial HP value is determined by hero’s level. When a hero levels up, they have 
+their HP set according to the same formula . 
+MP. MP (or mana) is used t o cast spells. For simplicity, the hero’s MP does not have to be 
+capped (like HP). The initial MP value is determined by the hero’s level. When a hero levels 
+up, they have their MP set according to the same formula.  
+Strength.  A hero’s strength increases th e amount of damage they deal when using a 
+weapon.   
+Dexterity.  A hero’s dexterity increases the amount of damage they deal when casting a 
+spell.  
+Agility.  A hero’s agility inc reases their chance to dodge a monster’s attack.  
+Gold. Gold represents the  hero ’s money  for use  in the market . 
+CS 611 Legends: Monsters and Heroes  
+Inventory.  A hero has a collection of items that they have bought during the game. At the 
+start of the game, the inventory is empty.  For simplicity, there does not need to be a 
+maximum inventory size.  
+There are three types of he roes , each with their own balance of skills:  
+• Warriors  are favored on strength and agility.  
+• Sorcerers  are favored on dexterity and agility.  
+• Paladins  are favored on strength and dexterity.  
+A “favored ” skill will be increased more than normal  at the start of the game and on each 
+level up . 
+A monster has several attributes:  
+• A name  
+• A level  
+• HP 
+• A base damage  value  
+• A defense value  
+• A dodge  ability  
+The example rules section contains formulae for the monster’s attributes that you can use in 
+your game.  
+Base damage.  For simplicity, a m onster ’s attack damage is calculated using this value . A 
+more complex alternative would be to give the monster a strength value like a hero and a 
+default “monster weapon” to deal damage with.  
+Defense.  Monsters don’t we ar armor, relying on their natural hides and carapaces to 
+protect them from the heroes’ attacks. This  value  reduces the amount of damage a monster 
+takes from a hero’s attack or spell.  
+Dodge ability . This represents how well  a monste r can  avoid a hero’s att ack. It functions in a 
+similar way to the hero’s agility.  
+ There are three kinds of monsters , each with a favored attribute :  
+• Dragons  have increased  base damage.  
+• Exoskeletons  have increased defense.  
+• Spirits  have increased dodge ability . 
+ 
+IV.The Market  
+The heroes can buy and sell items  at any market . Each market in the world is unique and  
+should have different items for sale. The market is a special menu where the player will be 
+able to see all the items for sale with  their details (ex. price and level ).  
+CS 611 Legends: Monsters and Heroes  
+Heroes enter the market individually. Each hero has a private wallet  (their gold amount)  and 
+does not share money with the other hero es. Likewise, each hero has their own inventory of 
+items that they do not share with their fellow heroes.  A hero should be a ble to  sell an item  
+in their inventory to the market, but only for less than the price for which it was bought (ex. 
+for half the purchase price ). A successful purchase will reduce the amount of gold the hero 
+has and  transfer the item from the market to the  hero’s inventory. A successful sale will 
+increase the amount of gold the hero has and add that item to the market’s item list . This 
+will allow other heroes to buy it, or for the selling hero to repurchase it  later . 
+All items have a name, a price , and a level. A hero cannot buy : (1) an item that costs more 
+than the money they have , or (2) an item that is a higher level than they are. The types of 
+items in Monsters and Heroes are:  
+• Weapons  
+• Armor  
+• Potion s 
+• Spells 
+Items should all have severa l uses before they are no longer useable. Once they are 
+unusable, you can either replace them, or have them repaired at the market for half of the 
+purchase price.  
+Weapon s. A weapon is used by a hero to attack a monster. A w eapon has a name, a price , a 
+level, a damage value, and the number of hands required to use it . A weapon must be 
+equipped by the hero before it can be used. The damage value is used to calculate the 
+damage dealt  during an attack move in a battle.  A weapon  may require one or two hands to 
+be used (i.e. a bow requires two hands). The weapons requiring two hands must always be 
+held with 2 hands. However, you can equip a one-handed weapon with both hands and 
+doing so  should increase the strength of the weapon .  
+Armor.  Armor reduce s the incoming damage from a monster’s attack. A piece of  armor has 
+a name , a price,  a level, and a damage reduction value. When equipped, armor will reduce 
+the damage taken by the hero by its damage reduction value. For simplicity you can assume 
+that a hero can equip at most one piece of armor at a time. A more comple x version would 
+have multiple armor slots and armor types for each slot.  
+Potion s. Potions can be used by a hero to increase one of their statistics by some amount. 
+Potions are single -use items : once they are used , potions  cannot be reused. Potions  have a 
+name, a price,  a level , and an effect amount . Using the potion should increase the given 
+statistic by the effect amount. There should  be potions for increasing HP, MP, strength, 
+dexterity, and agility.  More complex potions could include defense potions , revival potions , 
+or even a fire potion  (the possibilities are endless!). A more complex extension could include 
+multi -use potions.  
+Spell s. A spell represents a magic attack performed  by a hero. A spell has a name, a price , a 
+level , a damage value, a mana  cost, and a spell type . A hero will require at least the mana  
+cost amount of MP to cast the spell. Therefore, if a hero has no MP, that hero cannot cast 
+any spells. The damage value i s used  along with the hero’s dexterity value  to calculate the 
+CS 611 Legends: Monsters and Heroes  
+damage dealt during a spell cast move in a battle. After casting a spell, the mana cost is 
+deducted from the hero ’s MP . Spells also have an additional effect besides their damage. 
+The types of spells  and their effects are : 
+• Ice spell : reduces the damage of the target  
+• Fire spell : reduces the defense of the target  
+• Lightning spell : reduce s the dodge chance of the target  
+Spells are consumable items : like potions, spells can only be used a certain numb er of 
+times. For simplicity, you can make spells single -use items. A more complex version would 
+make spells multi -use items.  
+V. Controls  
+Example  controls for Monsters and Heroes include:  
+• W/w:  move up  
+• A/a:  move left  
+• S/s: move down  
+• D/d:  move right  
+• Q/q:  quit game  
+• I/i: show information  
+• M/m:  enter market  
+WASD/wasd.  These keys can be used to move the party around the world. This only applies 
+outside of a battle.  
+Q/q. The player should be able to quit the game at any time by pressing this key.  
+I/i. Outside of battle  this should show information about the her oes (their  level, their hp, 
+their mana, their current exp erience points , their money , and their skill levels ). 
+During a battle  this should show information about the heroes (their level, their hp, their 
+mana and their currently equipped weapons and armors) and infor mation about the 
+monsters (their level, their hp, their damage, their defense, and their dodge chance).  
+Thus, the player should be able at any moment to display  the heroes’  information.  
+M/m.  The heroes should only be able to enter a market if the party is located on a market 
+space. This should open the market menu.  
+Additionally,  when the heroes are outside of a market  or a battle, they should be able to 
+check their inventories to change their  weapons or armor. They should also be able to 
+consume a potion. The player should be able at any moment to display the map (the world).  
+There should also be a way to visually represent  all of the tiles and their properties. This 
+includes the presence of t he heroes’ party in a tile , whether  a tile is accessible , and if it 
+contains a market . The player should be able at any moment to quit the game.  
+Finally, please include in your game  the instructions for how to play. While you and I now 
+know the keys used t o play the game, keep in mind while  coding that you might want to give 
+this to your little brother who does not know any of this…  make it user -friendly.  
+CS 611 Legends: Monsters and Heroes  
+VI.Example Rules  
+The following rules are intended to be used in conjunction with the monsters, heroes, and 
+items detailed in th e provided Legends_Monsters_Heroes.zip file available on Blackboard.  
+There is no guarantee that the resulting game will be balanced or particularly fun to play 
+when using these formulae.  There is no requirement to use these exact numbers or 
+formulae. The example formulae:  
+• Hero’s s pell damage  = 𝑠𝑝𝑒𝑙𝑙_𝑏𝑎𝑠𝑒_𝑑𝑎𝑚𝑎𝑔𝑒 +(𝑑𝑒𝑥𝑡𝑒𝑟𝑖𝑡𝑦
+10000)×𝑠𝑝𝑒𝑙𝑙_𝑏𝑎𝑠𝑒_𝑑𝑎𝑚𝑎𝑔𝑒  
+• HP of monsters and heroes  = 𝑙𝑒𝑣𝑒𝑙×100 
+When a hero levels up,  this formula is used to reset their HP . 
+• MP of the heroes when they level up = 𝑐𝑢𝑟𝑟𝑒𝑛𝑡_𝑚𝑎𝑛𝑎×1.1 
+• Hero’s attack damage (with  weapon ) = (𝑠𝑡𝑟𝑒𝑛𝑔𝑡ℎ+𝑤𝑒𝑎𝑝𝑜𝑛_𝑑𝑎𝑚𝑎𝑔𝑒)×0.05 
+• Hero’s dodge chance =  𝑎𝑔𝑖𝑙𝑖𝑡𝑦×0.002 
+• Monster ’s dodg e chance =  𝑑𝑜𝑑𝑔𝑒_𝑐ℎ𝑎𝑛𝑐𝑒×.01 
+• Experience points to level up = ℎ𝑒𝑟𝑜_𝑐𝑢𝑟𝑟𝑒𝑛𝑡_𝑙𝑒𝑣𝑒𝑙×10 
+• When  a hero levels up all of their skills increase  by 5% and their favored skills increase 
+by an extra 5% . 
+• At the end of each  round of a battle  the heroes regai n 10% of their HP and 10% of their 
+MP. That is, 𝐻𝑃=𝐻𝑃×1.1 and 𝑀𝑃=𝑀𝑃×1.1 
+• Hero gold gain =  𝑚𝑜𝑛𝑠𝑡𝑒𝑟 _𝑙𝑒𝑣𝑒𝑙×100 for hero es who did not faint  
+• Hero experience gain =  𝑛𝑢𝑚𝑏𝑒𝑟_𝑚𝑜𝑛𝑠𝑡𝑒𝑟𝑠 ×2 
+• Monster ’s skill loss caused by spell  effect  = 𝑎𝑓𝑓𝑒𝑐𝑡𝑒𝑑𝑠𝑘𝑖𝑙𝑙×0.1 
+• Monster’s level = level of highest -level hero in the party  
+• Items sell for half of their purchase price.  
+• The party size is between 1 and 3 heroes.   
+CS 611 Legends: Monsters and Heroes  
+Assignment Logistics  and Final Notes  
+The specification simulates a role-playing  game of skill.  
+Implement the game using t he principles and practices of o bject-oriented design  as presented and 
+discussed in lecture.  
+The objective of this assignment is to identify and represent correct relations hips between classes while 
+maintaining best practices in programming and OO design.  
+Our focus  in grading will be on your OO structure and overall design, as well as how well you 
+implemented those relationships. We will not be as focused on how strictly you  followed the rules of 
+the game.  The rules are there as a guide and to make the whole experience more realistic, meaningful , 
+and enjoyable. Feel free to get creative with additional functionalities given that you have fulfilled the 
+existing requirements!  
+The helper files you have received have not been tested for fairness and you are free to adjust those 
+values. We will be demonstrating a working version of the game during discussion sessions this week to 
+help clarify the requirements of the game. In additi on to the specification, the attached zip file contains 
+the specifics for the heroes, monsters, weapons, armors, potions, and spells. You are always welcome to 
+use your imagination  to add more or  use your own naming.  
+Your code should implement the ability to read in the text files  for default attributes. These can be 
+modified in game such as a hero leveling up, but at the start of the next game, values should reset to 
+default.  
+Please note that this is NOT a group assignment.  Your design and your implementat ion should be your 
+own. Your program will be evaluated as follows:  
+• Object Design, with an emphasis on:  
+o Scalability  
+o Extendibility  
+• Implementation, with a specific emphasis on:  
+o Usability  
+o Readability  
+o Best Practices  
+Deliverables:  
+• readme text file  
+• Java source code  
+ 
+A word of advice: Begin by understanding the game. The specification is long and wordy,  but it is up to 
+you to flesh out the requirements. We will be doing an in-class  demonstration this week in discussion 
+but come prepared with questions to e nsure you have a solid understanding of the requirements. Have 
+fun and have a great adventure!!  

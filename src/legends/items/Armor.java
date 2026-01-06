@@ -17,6 +17,8 @@ public class Armor extends Item {
     public Armor(String name, double cost, int requiredLevel, int damageReduction) {
         super(name, cost, requiredLevel);
         this.damageReduction = damageReduction;
+        // Armors also wear down over time.
+        this.remainingUses = 25;
     }
 
     /**

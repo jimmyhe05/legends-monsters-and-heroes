@@ -5,6 +5,16 @@ package legends.game;
  */
 public class MarketTile extends Tile {
 
+    private final Market market;
+
+    public MarketTile() {
+        this.market = new Market();
+    }
+
+    public MarketTile(Market market) {
+        this.market = (market == null) ? new Market() : market;
+    }
+
     /**
      * Check if the tile is accessible by heroes.
      * 
@@ -23,6 +33,14 @@ public class MarketTile extends Tile {
     @Override
     public boolean hasMarket() {
         return true;
+    }
+
+    /**
+     * Get the market instance bound to this tile.
+     * Each MarketTile owns its own inventory per the spec.
+     */
+    public Market getMarket() {
+        return market;
     }
 
     /**
