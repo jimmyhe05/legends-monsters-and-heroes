@@ -3,7 +3,6 @@ package legends.state;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import legends.game.DataLoader;
 import legends.items.Armor;
 import legends.items.FireSpell;

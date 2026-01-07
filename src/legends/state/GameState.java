@@ -1,15 +1,11 @@
 package legends.state;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import legends.entities.heroes.Hero;
 import legends.game.Board;
 import legends.game.Difficulty;
-
-/**
- * Snapshot of the game world for save/load. Keep fields simple/serializable.
- */
-import java.io.Serializable;
 
 public class GameState implements Serializable {
     private static final long serialVersionUID = 1L;

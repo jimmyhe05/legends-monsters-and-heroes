@@ -3,7 +3,6 @@ package legends.game;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-
 import legends.utilities.Color;
 
 /**

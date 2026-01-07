@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import legends.entities.heroes.Hero;
 import legends.entities.heroes.Paladin;
 import legends.entities.heroes.Sorcerer;
