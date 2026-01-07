@@ -5,12 +5,14 @@ import java.util.Map;
 import legends.entities.heroes.Hero;
 import legends.game.Board;
 import legends.game.Difficulty;
-import legends.game.Market;
 
 /**
  * Snapshot of the game world for save/load. Keep fields simple/serializable.
  */
-public class GameState {
+import java.io.Serializable;
+
+public class GameState implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final Difficulty difficulty;
     private final int boardSize;
     private final char[][] boardLayout;
@@ -46,14 +48,14 @@ public class GameState {
     /**
      * Create a snapshot from live objects.
      */
-    public static GameState from(Board board, List<Hero> heroes, Difficulty difficulty, Map<String, Market> markets) {
+    public static GameState from(Board board, List<Hero> heroes, Difficulty difficulty) {
         if (board == null || heroes == null) return null;
         char[][] layout = board.copyLayout();
         int size = board.getSize();
-    int row = board.getPartyRow();
-    int col = board.getPartyCol();
+        int row = board.getPartyRow();
+        int col = board.getPartyCol();
         List<HeroSnapshot> party = HeroSnapshot.fromHeroes(heroes);
-        Map<String, MarketSnapshot> marketSnaps = MarketSnapshot.fromMarkets(markets);
+        Map<String, MarketSnapshot> marketSnaps = MarketSnapshot.fromMarkets(board.getMarkets());
         return new GameState(difficulty, size, layout, row, col, party, marketSnaps);
     }
 }

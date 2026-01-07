@@ -3,7 +3,9 @@ package legends.items;
 /**
  * Abstract base class for all items in the game.
  */
-public abstract class Item {
+import java.io.Serializable;
+
+public abstract class Item implements Serializable {
     protected String name;
     protected double cost;
     protected int requiredLevel;

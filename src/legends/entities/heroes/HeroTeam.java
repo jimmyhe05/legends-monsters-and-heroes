@@ -56,6 +56,17 @@ public class HeroTeam implements Iterable<Hero> {
         return Collections.unmodifiableList(heroes);
     }
 
+    public void clear() {
+        heroes.clear();
+    }
+
+    public void replaceWith(List<Hero> newHeroes) {
+        heroes.clear();
+        if (newHeroes != null) {
+            heroes.addAll(newHeroes);
+        }
+    }
+
     @Override
     public Iterator<Hero> iterator() {
         return heroes.iterator();

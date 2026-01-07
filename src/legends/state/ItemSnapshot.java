@@ -1,9 +1,13 @@
 package legends.state;
 
+import java.io.Serializable;
+
 /**
  * Lightweight item snapshot identified primarily by name and type.
  */
-public class ItemSnapshot {
+public class ItemSnapshot implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final String name;
     private final String type;
 

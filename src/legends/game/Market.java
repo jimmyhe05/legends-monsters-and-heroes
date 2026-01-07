@@ -49,6 +49,13 @@ public class Market {
 		this.spells = pickSubset(allSpells, 6);
 	}
 
+	public Market(List<Weapon> weapons, List<Armor> armors, List<Potion> potions, List<Spell> spells) {
+		this.weapons = weapons == null ? new ArrayList<>() : weapons;
+		this.armors = armors == null ? new ArrayList<>() : armors;
+		this.potions = potions == null ? new ArrayList<>() : potions;
+		this.spells = spells == null ? new ArrayList<>() : spells;
+	}
+
 	public List<Weapon> getWeapons() {
 		return weapons;
 	}

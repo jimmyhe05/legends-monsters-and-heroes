@@ -261,6 +261,13 @@ public abstract class Hero implements Combatant {
     }
 
     /**
+     * Directly set gold (used for loading saved games).
+     */
+    public void setGold(double gold) {
+        this.gold = gold;
+    }
+
+    /**
      * Spend gold. Returns true if successful.
      * 
      * @param amount amount of gold to spend
@@ -272,6 +279,20 @@ public abstract class Hero implements Combatant {
         }
         gold -= amount;
         return true;
+    }
+
+    /**
+     * Directly set experience points (used for loading saved games).
+     */
+    public void setExperience(double experience) {
+        this.experience = experience;
+    }
+
+    /**
+     * Directly set level (used for loading saved games). Does not auto-scale stats.
+     */
+    public void setLevel(int level) {
+        this.level = level;
     }
 
     // ----- Dodge chance -----

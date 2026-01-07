@@ -1,5 +1,6 @@
 package legends.state;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import legends.entities.heroes.Hero;
@@ -12,7 +13,8 @@ import legends.items.Weapon;
 /**
  * Snapshot of a hero's core stats, equipment, and inventory by item name.
  */
-public class HeroSnapshot {
+public class HeroSnapshot implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final String name;
     private final String heroClass;
     private final int level;

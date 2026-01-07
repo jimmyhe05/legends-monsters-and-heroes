@@ -18,6 +18,8 @@ import legends.items.Armor;
 import legends.items.Inventory;
 import legends.items.Potion;
 import legends.items.Weapon;
+import legends.state.GameState;
+import legends.state.SaveLoadManager;
 import legends.utilities.Color;
 
 /**
@@ -33,6 +35,8 @@ public class Game extends BaseGame {
     private boolean running;
     private final Scanner in;
     private final Random rand;
+    private final SaveLoadManager saveLoadManager;
+    private Difficulty difficulty = Difficulty.NORMAL;
 
     private List<Warrior> allWarriors;
     private List<Paladin> allPaladins;
@@ -47,6 +51,7 @@ public class Game extends BaseGame {
         this.in = new Scanner(System.in);
         this.running = false;
         this.rand = new Random();
+        this.saveLoadManager = new SaveLoadManager();
     }
 
     /**
@@ -165,7 +170,11 @@ public class Game extends BaseGame {
             System.out.println("5. Remove hero from party");
             System.out.print("Enter choice: ");
 
-            String line = in.nextLine().trim();
+            String line = readLineSafe();
+            if (line == null) {
+                return; // input closed, abort setup
+            }
+            line = line.trim();
             if (line.isEmpty()) {
                 continue;
             }
@@ -218,7 +227,11 @@ public class Game extends BaseGame {
             }
             System.out.print("Choose hero index (or 0 to cancel): ");
 
-            String line = in.nextLine().trim();
+            String line = readLineSafe();
+            if (line == null) {
+                return; // input closed, abort
+            }
+            line = line.trim();
             int idx;
             try {
                 idx = Integer.parseInt(line);
@@ -337,6 +350,8 @@ public class Game extends BaseGame {
                 case 'I' -> showPartyInfo();
                 case 'E' -> openPartyManagementMenu();
                 case 'M' -> enterMarketIfPossible();
+                case 'P' -> saveGameMenu();
+                case 'O' -> loadGameMenu();
                 case 'Q' -> {
                     running = false;
 					System.out.println(Color.warning("Quitting game. Goodbye!"));
@@ -353,9 +368,40 @@ public class Game extends BaseGame {
     private void printControls() {
 		System.out.println(Color.title("Controls: ") +
 				Color.CYAN + "W/A/S/D" + Color.RESET + " to move | " +
-				"I: info | E: equip/use | M: market | Q: quit");
+				"I: info | E: equip/use | M: market | P: save | O: load | Q: quit");
     }
 
+    private void saveGameMenu() {
+        GameState state = GameState.from(board, party.asList(), difficulty);
+        if (state == null) {
+            System.out.println(Color.error("Nothing to save."));
+            return;
+        }
+        System.out.print("Save file path (default saves/latest.dat): ");
+        String path = in.nextLine().trim();
+        if (path.isEmpty()) {
+            path = "saves/latest.dat";
+        }
+        boolean ok = saveLoadManager.save(state, path);
+        System.out.println(ok ? Color.success("Game saved to " + path) : Color.error("Failed to save."));
+    }
+
+    private void loadGameMenu() {
+        System.out.print("Load file path (default saves/latest.dat): ");
+        String path = in.nextLine().trim();
+        if (path.isEmpty()) {
+            path = "saves/latest.dat";
+        }
+        SaveLoadManager.SaveResult result = saveLoadManager.load(path);
+        if (result == null || result.getBoard() == null || result.getHeroes() == null || result.getHeroes().isEmpty()) {
+            System.out.println(Color.error("Failed to load game from " + path));
+            return;
+        }
+        this.board = result.getBoard();
+        this.difficulty = result.getDifficulty();
+        this.party.replaceWith(result.getHeroes());
+        System.out.println(Color.success("Game loaded: " + result.getHeroes().size() + " heroes, board size " + board.getSize()));
+    }
     /**
      * Open an out-of-battle party management menu for equipment and potions.
      */
@@ -420,6 +466,18 @@ public class Game extends BaseGame {
                 default -> System.out.println(Color.error("Invalid choice."));
             }
         }
+    }
+
+    /**
+     * Read a line from input, returning null if stdin is closed to avoid NoSuchElementException.
+     */
+    private String readLineSafe() {
+        if (!in.hasNextLine()) {
+            System.out.println(Color.error("Input closed. Exiting."));
+            running = false;
+            return null;
+        }
+        return in.nextLine();
     }
 
     /**
