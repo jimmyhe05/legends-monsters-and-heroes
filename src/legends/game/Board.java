@@ -304,6 +304,34 @@ public class Board {
         return lastMoveFirstVisit;
     }
 
+    /**
+     * Create a simple character grid representing the current board layout and visit state.
+     * 'H' for hero position, 'M' for market, 'X' for inaccessible, '*' for visited common,
+     * '.' for unvisited common.
+     *
+     * @return copy of the current layout as chars
+     */
+    public char[][] copyLayout() {
+        char[][] layout = new char[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (i == partyRow && j == partyCol) {
+                    layout[i][j] = 'H';
+                } else {
+                    Tile t = grid[i][j];
+                    if (t instanceof MarketTile) {
+                        layout[i][j] = 'M';
+                    } else if (t instanceof InaccessibleTile) {
+                        layout[i][j] = 'X';
+                    } else {
+                        layout[i][j] = visited[i][j] ? '*' : '.';
+                    }
+                }
+            }
+        }
+        return layout;
+    }
+
 
     /* ===================== Display ===================== */
 

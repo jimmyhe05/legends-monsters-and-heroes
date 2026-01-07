@@ -390,6 +390,15 @@ public abstract class Hero implements Combatant {
     }
 
     /**
+     * Get the hero's experience points.
+     *
+     * @return hero's experience
+     */
+    public double getExperience() {
+        return experience;
+    }
+
+    /**
      * Get the hero's inventory.
      * 
      * @return hero's inventory

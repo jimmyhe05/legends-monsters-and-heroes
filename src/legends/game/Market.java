@@ -49,6 +49,22 @@ public class Market {
 		this.spells = pickSubset(allSpells, 6);
 	}
 
+	public List<Weapon> getWeapons() {
+		return weapons;
+	}
+
+	public List<Armor> getArmors() {
+		return armors;
+	}
+
+	public List<Potion> getPotions() {
+		return potions;
+	}
+
+	public List<Spell> getSpells() {
+		return spells;
+	}
+
 	/**
 	 * Main market loop. Lets the user pick a hero and then buy/sell items
 	 * until they choose to leave.
