@@ -2,12 +2,12 @@ package legends.state;
 
 import java.util.ArrayList;
 import java.util.List;
+import legends.entities.heroes.Hero;
 import legends.items.Armor;
+import legends.items.Inventory;
 import legends.items.Potion;
 import legends.items.Spell;
 import legends.items.Weapon;
-import legends.items.Inventory;
-import legends.entities.heroes.Hero;
 
 /**
  * Snapshot of a hero's core stats, equipment, and inventory by item name.

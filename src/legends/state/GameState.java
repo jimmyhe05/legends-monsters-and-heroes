@@ -2,7 +2,6 @@ package legends.state;
 
 import java.util.List;
 import java.util.Map;
-
 import legends.entities.heroes.Hero;
 import legends.game.Board;
 import legends.game.Difficulty;

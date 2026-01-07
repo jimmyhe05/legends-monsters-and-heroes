@@ -1,7 +1,6 @@
 package legends.game;
 
 import java.util.Random;
-
 import legends.utilities.Color;
 
 /**
