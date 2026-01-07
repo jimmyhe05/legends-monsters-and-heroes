@@ -20,8 +20,8 @@ import legends.items.Potion;
 import legends.items.Weapon;
 import legends.state.GameState;
 import legends.state.SaveLoadManager;
-import legends.utilities.Color;
 import legends.utilities.AsciiArtRenderer;
+import legends.utilities.Color;
 import legends.utilities.SoundService;
 
 /**
