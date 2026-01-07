@@ -21,6 +21,8 @@ import legends.items.Weapon;
 import legends.state.GameState;
 import legends.state.SaveLoadManager;
 import legends.utilities.Color;
+import legends.utilities.AsciiArtRenderer;
+import legends.utilities.SoundService;
 
 /**
  * Main class representing the Legends game.
@@ -36,6 +38,8 @@ public class Game extends BaseGame {
     private final Scanner in;
     private final Random rand;
     private final SaveLoadManager saveLoadManager;
+    private final SoundService sound;
+    private boolean musicEnabled = true;
     private Difficulty difficulty = Difficulty.NORMAL;
 
     private List<Warrior> allWarriors;
@@ -52,6 +56,7 @@ public class Game extends BaseGame {
         this.running = false;
         this.rand = new Random();
         this.saveLoadManager = new SaveLoadManager();
+        this.sound = new SoundService();
     }
 
     /**
@@ -70,9 +75,11 @@ public class Game extends BaseGame {
      * - create the board
      */
     private void setup() {
-        System.out.println(Color.title("==========================================="));
-        System.out.println(Color.title("   WELCOME TO LEGENDS: MONSTERS & HEROES   "));
-        System.out.println(Color.title("==========================================="));
+    AsciiArtRenderer.render("assets/ascii/title.txt");
+	sound.playEffect("intro_theme");
+    if (musicEnabled) {
+        sound.playLoop("background_music", true);
+    }
         System.out.println(Color.warning("Lead a party of heroes, explore the land, visit markets,"));
         System.out.println(Color.warning("and fight terrifying monsters in turn-based battles.\n"));
 
@@ -350,6 +357,8 @@ public class Game extends BaseGame {
                 case 'I' -> showPartyInfo();
                 case 'E' -> openPartyManagementMenu();
                 case 'M' -> enterMarketIfPossible();
+                case 'V' -> toggleSound();
+                case 'B' -> toggleMusic();
                 case 'P' -> saveGameMenu();
                 case 'O' -> loadGameMenu();
                 case 'Q' -> {
@@ -367,8 +376,30 @@ public class Game extends BaseGame {
      */
     private void printControls() {
 		System.out.println(Color.title("Controls: ") +
-				Color.CYAN + "W/A/S/D" + Color.RESET + " to move | " +
-				"I: info | E: equip/use | M: market | P: save | O: load | Q: quit");
+            Color.CYAN + "W/A/S/D" + Color.RESET + " to move | " +
+            "I: info | E: equip/use | M: market | V: SFX on/off | B: music on/off | P: save | O: load | Q: quit");
+    }
+
+    private void toggleSound() {
+        sound.toggle();
+        if (sound.isEnabled()) {
+            System.out.println(Color.success("Sound enabled. Add WAV files under assets/sounds (e.g., intro.wav, battle_start.wav)."));
+        } else {
+            System.out.println(Color.warning("Sound muted."));
+            musicEnabled = false;
+            sound.stopLoop();
+        }
+    }
+
+    private void toggleMusic() {
+        musicEnabled = !musicEnabled;
+        if (musicEnabled) {
+            sound.playLoop("background_music", true);
+            System.out.println(Color.success("Music enabled."));
+        } else {
+            sound.stopLoop();
+            System.out.println(Color.warning("Music muted."));
+        }
     }
 
     private void saveGameMenu() {
@@ -625,9 +656,12 @@ public class Game extends BaseGame {
             return;
         }
 
+    sound.playEffect("move_step");
+
         Tile tile = board.getCurrentTile();
         if (tile.hasMarket()) {
-			System.out.println(Color.success("You stepped on a MARKET tile. Press 'M' to enter."));
+        sound.playEffect("market_enter");
+		System.out.println(Color.success("You stepped on a MARKET tile. Press 'M' to enter."));
         } else {
 			System.out.println(Color.warning("You are on a COMMON tile."));
             maybeTriggerBattle();
@@ -655,6 +689,7 @@ public class Game extends BaseGame {
             return;
         }
 		System.out.println(Color.success("Entering market..."));
+    sound.playEffect("market_enter");
         if (tile instanceof MarketTile marketTile) {
             marketTile.getMarket().run(party.asList(), in);
         }
@@ -669,7 +704,8 @@ public class Game extends BaseGame {
             return;
         }
 
-		System.out.println(Color.warning("A group of monsters appears!"));
+         System.out.println(Color.warning("A group of monsters appears!"));
+         sound.playEffect("battle_encounter");
 
         List<Monster> encounter = createEncounter();
         if (encounter.isEmpty()) {
@@ -677,7 +713,7 @@ public class Game extends BaseGame {
             return;
         }
 
-    Battle battle = new Battle(party.asList(), encounter);
+    Battle battle = new Battle(party.asList(), encounter, sound);
         battle.start();
 
         // If all heroes fainted, end the game.

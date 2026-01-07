@@ -93,6 +93,9 @@ Below is a list of the main Java source files included in this submission and a 
 - `src/legends/utilities/InputUtil.java`, `RandomUtil.java`  
   Small helpers for input parsing and random selection.
 
+- `src/legends/utilities/SoundService.java`  
+  Lightweight WAV player with caching and a built-in toggle (press `V` in-game). Looks for files under `assets/sounds/` and falls back to a console beep if missing.
+
 - `data/heroes/*.txt`  
   Hero data files (`Warriors.txt`, `Paladins.txt`, `Sorcerers.txt`) containing base stats and starting gold.
 
@@ -137,6 +140,14 @@ Some highlights and design notes for this implementation:
 7. **Console formatting and colors**  
   - Output is formatted into aligned columns for hero/monster stats and market lists to keep things readable in a monospaced terminal.  
   - ANSI colors are used to highlight heroes, monsters, titles, errors, and gold. The game still works in terminals without color support, just without styling.
+
+  8. **Sound cues (optional)**  
+    - Press `V` anytime to toggle sound.  
+    - Drop short WAV files into `assets/sounds/` to customize cues. Current hooks expect:  
+      - `intro_theme.wav`, `move_step.wav`, `market_enter.wav`  
+      - `battle_encounter.wav`, `battle_start.wav`  
+      - `victory_fanfare.wav`, `flee_escape.wav`, `defeat_loss.wav`, `hero_down.wav`  
+    - If you add different files, keep the same filenames or update the sound keys in `Game`/`Battle`. Missing files fall back to the default console beep.
 
 
 ## How to compile and run

@@ -11,6 +11,7 @@ import legends.items.Potion;
 import legends.items.Spell;
 import legends.items.Weapon;
 import legends.utilities.Color;
+import legends.utilities.SoundService;
 
 /**
  * Class representing a battle between heroes and monsters.
@@ -21,6 +22,7 @@ public class Battle {
     private final List<Monster> monsters;
     private final HeroTargetStrategy heroTargetStrategy;
     private final Scanner in;
+    private final SoundService sound;
     // Flag indicating the party has successfully fled this battle.
     private boolean fleeing = false;
 
@@ -30,16 +32,24 @@ public class Battle {
      * @param heroes   List of heroes participating in the battle
      * @param monsters List of monsters participating in the battle
      */
-    public Battle(List<Hero> heroes, List<Monster> monsters) {
+    public Battle(List<Hero> heroes, List<Monster> monsters, SoundService sound) {
         // assume both lists are non-null
         this.heroes = heroes;
         this.monsters = monsters;
         this.in = new Scanner(System.in);
         this.heroTargetStrategy = new RandomHeroTargetStrategy();
+        this.sound = sound;
+    }
+
+    private void play(String effect) {
+        if (sound != null) {
+            sound.playEffect(effect);
+        }
     }
 
         // start the battle
         public void start() {
+    play("battle_start");
 		System.out.println(Color.title("=== BATTLE START ==="));
 		System.out.println(Color.title("Heroes vs Monsters!"));
 
@@ -65,11 +75,14 @@ public class Battle {
 
         if (allMonstersDead()) {
             System.out.println(Color.success("Heroes win the battle!"));
+            play("victory_fanfare");
             handleVictoryRewards();
         } else if (fleeing) {
             System.out.println(Color.warning("The party successfully fled the battle."));
+            play("flee_escape");
         } else {
             System.out.println(Color.error("All heroes have fainted... Game Over."));
+            play("defeat_loss");
         }
 
         System.out.println(Color.title("=== BATTLE END ==="));
@@ -201,6 +214,7 @@ public class Battle {
 
             if (isHeroFainted(target)) {
                 System.out.println(Color.error(target.getDisplayName() + " has fainted!"));
+                play("hero_down");
             }
         }
     }
