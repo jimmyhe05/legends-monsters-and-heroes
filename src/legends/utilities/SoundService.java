@@ -73,11 +73,7 @@ public class SoundService {
             }
             clip.setFramePosition(0);
             clip.start();
-        } catch (LineUnavailableException e) {
-            beepFallback();
-        } catch (IOException e) {
-            beepFallback();
-        } catch (UnsupportedAudioFileException e) {
+        } catch (LineUnavailableException | IOException | UnsupportedAudioFileException e) {
             beepFallback();
         }
     }
@@ -101,9 +97,19 @@ public class SoundService {
                 if (!restart && cache.containsKey(path) && loopingClip == cache.get(path) && loopingClip.isActive()) {
                     return; // already playing this track
                 }
+                // stop the existing looping clip
                 loopingClip.stop();
                 loopingClip.flush();
                 loopingClip.setFramePosition(0);
+                if (restart) {
+                    // Close and remove from cache so we open a fresh Clip instance.
+                    try {
+                        loopingClip.close();
+                    } catch (Exception ignored) {
+                    }
+                    cache.remove(path);
+                    loopingClip = null;
+                }
             }
 
             loopingClip = loadClip(path);
@@ -157,5 +163,12 @@ public class SoundService {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    /**
+     * @return true if a looping clip is currently active.
+     */
+    public boolean isLoopingActive() {
+        return loopingClip != null && loopingClip.isActive();
     }
 }

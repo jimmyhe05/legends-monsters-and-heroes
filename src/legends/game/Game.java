@@ -40,6 +40,7 @@ public class Game extends BaseGame {
     private final SaveLoadManager saveLoadManager;
     private final SoundService sound;
     private boolean musicEnabled = true;
+    private String currentLoopTrack = "intro_theme";
     private Difficulty difficulty = Difficulty.NORMAL;
 
     private List<Warrior> allWarriors;
@@ -76,12 +77,11 @@ public class Game extends BaseGame {
      */
     private void setup() {
     AsciiArtRenderer.render("assets/ascii/title.txt");
-	sound.playEffect("intro_theme");
-    if (musicEnabled) {
-        sound.playLoop("background_music", true);
-    }
-        System.out.println(Color.warning("Lead a party of heroes, explore the land, visit markets,"));
-        System.out.println(Color.warning("and fight terrifying monsters in turn-based battles.\n"));
+	sound.playLoop("intro_theme", true);
+        currentLoopTrack = "intro_theme";
+    System.out.println(Color.warning("Lead a party of heroes, explore the land, visit markets,"));
+    System.out.println(Color.warning("and fight terrifying monsters in turn-based battles."));
+    System.out.println(Color.success("Tip: Press V (or B) any time to toggle all sound on/off. Press Q anytime to quit.\n"));
 
         loadHeroData();
         loadMonsterData();
@@ -97,25 +97,30 @@ public class Game extends BaseGame {
      * @return the chosen board size
      */
     private int askBoardSize() {
-        System.out.println("Choose board size (NxN).");
-        System.out.println("Press ENTER for default " + DEFAULT_BOARD_SIZE + "x" + DEFAULT_BOARD_SIZE + ".");
-        System.out.print("Or enter a size between " + MIN_BOARD_SIZE + " and " + MAX_BOARD_SIZE + ": ");
+        while (true) {
+            System.out.println("Choose board size (NxN).");
+            System.out.println("Press ENTER for default " + DEFAULT_BOARD_SIZE + "x" + DEFAULT_BOARD_SIZE + ".");
+            System.out.print("Or enter a size between " + MIN_BOARD_SIZE + " and " + MAX_BOARD_SIZE + ": ");
 
-        String line = in.nextLine().trim();
-        if (line.isEmpty()) {
-            return DEFAULT_BOARD_SIZE;
-        }
-
-        try {
-            int value = Integer.parseInt(line);
-            if (value < MIN_BOARD_SIZE || value > MAX_BOARD_SIZE) {
-                System.out.println("Out of range, using default " + DEFAULT_BOARD_SIZE + ".");
+            String line = in.nextLine().trim();
+            if (handleGlobalToggle(line)) {
+                continue; // re-prompt after toggling
+            }
+            if (line.isEmpty()) {
                 return DEFAULT_BOARD_SIZE;
             }
-            return value;
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid number, using default " + DEFAULT_BOARD_SIZE + ".");
-            return DEFAULT_BOARD_SIZE;
+
+            try {
+                int value = Integer.parseInt(line);
+                if (value < MIN_BOARD_SIZE || value > MAX_BOARD_SIZE) {
+                    System.out.println("Out of range, using default " + DEFAULT_BOARD_SIZE + ".");
+                    return DEFAULT_BOARD_SIZE;
+                }
+                return value;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number, using default " + DEFAULT_BOARD_SIZE + ".");
+                return DEFAULT_BOARD_SIZE;
+            }
         }
     }
 
@@ -182,6 +187,9 @@ public class Game extends BaseGame {
                 return; // input closed, abort setup
             }
             line = line.trim();
+            if (handleGlobalToggle(line)) {
+                continue;
+            }
             if (line.isEmpty()) {
                 continue;
             }
@@ -239,6 +247,9 @@ public class Game extends BaseGame {
                 return; // input closed, abort
             }
             line = line.trim();
+            if (handleGlobalToggle(line)) {
+                continue;
+            }
             int idx;
             try {
                 idx = Integer.parseInt(line);
@@ -281,35 +292,41 @@ public class Game extends BaseGame {
             return;
         }
 
-        System.out.println("\nCurrent party:");
-        for (int i = 0; i < party.size(); i++) {
-            Hero h = party.get(i);
-            System.out.println((i + 1) + ". " + h.getDisplayName() + " (" + h.getClass().getSimpleName() + ")");
-        }
-        System.out.print("Enter index of hero to remove (or 0 to cancel): ");
+        while (true) {
+            System.out.println("\nCurrent party:");
+            for (int i = 0; i < party.size(); i++) {
+                Hero h = party.get(i);
+                System.out.println((i + 1) + ". " + h.getDisplayName() + " (" + h.getClass().getSimpleName() + ")");
+            }
+            System.out.print("Enter index of hero to remove (or 0 to cancel): ");
 
-        String line = in.nextLine().trim();
-        int idx;
-        try {
-            idx = Integer.parseInt(line);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid index.");
-            return;
-        }
+            String line = in.nextLine().trim();
+            if (handleGlobalToggle(line)) {
+                continue;
+            }
+            int idx;
+            try {
+                idx = Integer.parseInt(line);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid index.");
+                continue;
+            }
 
-        if (idx == 0) {
-            System.out.println("Removal cancelled.");
-            return;
-        }
+            if (idx == 0) {
+                System.out.println("Removal cancelled.");
+                return;
+            }
 
-        if (idx < 1 || idx > party.size()) {
-            System.out.println("Index out of range.");
-            return;
-        }
+            if (idx < 1 || idx > party.size()) {
+                System.out.println("Index out of range.");
+                continue;
+            }
 
-        Hero removed = party.remove(idx - 1);
-        System.out.println(removed.getDisplayName() + " was removed from the party.");
+            Hero removed = party.remove(idx - 1);
+            System.out.println(removed.getDisplayName() + " was removed from the party.");
             printPartySummary();
+            return;
+        }
     }
 
     /**
@@ -338,6 +355,11 @@ public class Game extends BaseGame {
             return;
         }
 
+        if (musicEnabled) {
+            currentLoopTrack = "background_music";
+            sound.playLoop(currentLoopTrack, true);
+        }
+
         while (running) {
             board.display();
             printControls();
@@ -358,7 +380,7 @@ public class Game extends BaseGame {
                 case 'E' -> openPartyManagementMenu();
                 case 'M' -> enterMarketIfPossible();
                 case 'V' -> toggleSound();
-                case 'B' -> toggleMusic();
+                case 'B' -> toggleSound();
                 case 'P' -> saveGameMenu();
                 case 'O' -> loadGameMenu();
                 case 'Q' -> {
@@ -376,29 +398,24 @@ public class Game extends BaseGame {
      */
     private void printControls() {
 		System.out.println(Color.title("Controls: ") +
-            Color.CYAN + "W/A/S/D" + Color.RESET + " to move | " +
-            "I: info | E: equip/use | M: market | V: SFX on/off | B: music on/off | P: save | O: load | Q: quit");
+        Color.CYAN + "W/A/S/D" + Color.RESET + " to move | " +
+        "I: info | E: equip/use | M: market | V/B: all sound on/off | P: save | O: load | Q: quit");
     }
 
     private void toggleSound() {
-        sound.toggle();
-        if (sound.isEnabled()) {
-            System.out.println(Color.success("Sound enabled. Add WAV files under assets/sounds (e.g., intro.wav, battle_start.wav)."));
-        } else {
-            System.out.println(Color.warning("Sound muted."));
-            musicEnabled = false;
-            sound.stopLoop();
-        }
-    }
+        boolean enable = !sound.isEnabled();
+        sound.setEnabled(enable);
+        musicEnabled = enable;
 
-    private void toggleMusic() {
-        musicEnabled = !musicEnabled;
-        if (musicEnabled) {
-            sound.playLoop("background_music", true);
-            System.out.println(Color.success("Music enabled."));
+        if (enable) {
+            if (currentLoopTrack == null) {
+                currentLoopTrack = "background_music";
+            }
+            sound.playLoop(currentLoopTrack, true);
+            System.out.println(Color.success("Sound enabled."));
         } else {
             sound.stopLoop();
-            System.out.println(Color.warning("Music muted."));
+            System.out.println(Color.warning("Sound muted."));
         }
     }
 
@@ -509,6 +526,33 @@ public class Game extends BaseGame {
             return null;
         }
         return in.nextLine();
+    }
+
+    /**
+     * Allow toggling sound effects (V) and music (B) from any prompt.
+     * @param raw the raw input line
+     * @return true if a toggle was handled and caller should re-prompt
+     */
+    private boolean handleGlobalToggle(String raw) {
+        if (raw == null) {
+            return false;
+        }
+        String normalized = raw.trim().toUpperCase();
+        switch (normalized) {
+            case "V", "B" -> {
+                toggleSound();
+                return true;
+            }
+            case "Q" -> {
+                System.out.println(Color.warning("Quitting game. Goodbye!"));
+                running = false;
+                System.exit(0);
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     /**
