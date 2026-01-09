@@ -1,5 +1,6 @@
 package legends.entities.heroes;
 
+import legends.entities.Combatant;
 import legends.entities.monsters.Monster;
 import legends.items.Armor;
 import legends.items.Inventory;
@@ -11,7 +12,7 @@ import legends.utilities.Color;
 /**
  * Abstract base class for all hero types in the game.
  */
-public abstract class Hero {
+public abstract class Hero implements Combatant {
 
     // ----- Core attributes -----
     protected String name;
@@ -29,6 +30,8 @@ public abstract class Hero {
     protected Inventory inventory;
     protected Weapon equippedWeapon;
     protected Armor equippedArmor;
+    // true if hero is gripping the equipped weapon with two hands (for bonus on one-hand weapons)
+    protected boolean weaponTwoHandedGrip;
 
     /**
      * Constructor for a hero.
@@ -62,6 +65,7 @@ public abstract class Hero {
         this.inventory = new Inventory();
         this.equippedWeapon = null;
         this.equippedArmor = null;
+        this.weaponTwoHandedGrip = false;
     }
 
     // ----- Core combat API -----
@@ -106,8 +110,13 @@ public abstract class Hero {
         if (w == null) {
             return;
         }
-        // check level & inventory
+        if (!w.isUsable()) {
+            System.out.println(w.getName() + " is broken and cannot be equipped until repaired.");
+            return;
+        }
         this.equippedWeapon = w;
+        // default grip: two hands if weapon requires two, otherwise one hand until set
+        this.weaponTwoHandedGrip = (w.getHandsRequired() == 2);
     }
 
     /**
@@ -117,8 +126,30 @@ public abstract class Hero {
         if (a == null) {
             return;
         }
-        // check level & inventory
+        if (!a.isUsable()) {
+            System.out.println(a.getName() + " is broken and cannot be equipped until repaired.");
+            return;
+        }
         this.equippedArmor = a;
+    }
+
+    /**
+     * Configure whether the current weapon is held with two hands (only meaningful for 1-hand weapons).
+     */
+    public void setWeaponTwoHandedGrip(boolean twoHanded) {
+        if (equippedWeapon == null) {
+            this.weaponTwoHandedGrip = false;
+            return;
+        }
+        if (equippedWeapon.getHandsRequired() == 2) {
+            this.weaponTwoHandedGrip = true; // forced two hands
+        } else {
+            this.weaponTwoHandedGrip = twoHanded;
+        }
+    }
+
+    public boolean isWeaponTwoHandedGrip() {
+        return weaponTwoHandedGrip;
     }
 
     // ----- Combat helpers -----
@@ -130,6 +161,14 @@ public abstract class Hero {
         double damage = rawDamage;
         if (equippedArmor != null) {
             damage -= equippedArmor.getDamageReduction();
+            // consume armor durability once per hit
+            if (equippedArmor.getRemainingUses() > 0) {
+                equippedArmor.consumeUse();
+                if (!equippedArmor.isUsable()) {
+                    System.out.println(equippedArmor.getName() + " has broken!");
+                    equippedArmor = null;
+                }
+            }
         }
         if (damage < 0) {
             damage = 0;
@@ -147,6 +186,11 @@ public abstract class Hero {
      */
     public boolean isFainted() {
         return hp <= 0;
+    }
+
+    @Override
+    public boolean isDefeated() {
+        return isFainted();
     }
 
     /**
@@ -217,6 +261,13 @@ public abstract class Hero {
     }
 
     /**
+     * Directly set gold (used for loading saved games).
+     */
+    public void setGold(double gold) {
+        this.gold = gold;
+    }
+
+    /**
      * Spend gold. Returns true if successful.
      * 
      * @param amount amount of gold to spend
@@ -228,6 +279,20 @@ public abstract class Hero {
         }
         gold -= amount;
         return true;
+    }
+
+    /**
+     * Directly set experience points (used for loading saved games).
+     */
+    public void setExperience(double experience) {
+        this.experience = experience;
+    }
+
+    /**
+     * Directly set level (used for loading saved games). Does not auto-scale stats.
+     */
+    public void setLevel(int level) {
+        this.level = level;
     }
 
     // ----- Dodge chance -----
@@ -271,6 +336,7 @@ public abstract class Hero {
      *
      * @return display-formatted hero name
      */
+    @Override
     public String getDisplayName() {
         if (name == null) {
             return "";
@@ -283,6 +349,7 @@ public abstract class Hero {
      * 
      * @return hero's level
      */
+    @Override
     public int getLevel() {
         return level;
     }
@@ -292,6 +359,7 @@ public abstract class Hero {
      * 
      * @return hero's HP
      */
+    @Override
     public double getHp() {
         return hp;
     }
@@ -343,6 +411,15 @@ public abstract class Hero {
     }
 
     /**
+     * Get the hero's experience points.
+     *
+     * @return hero's experience
+     */
+    public double getExperience() {
+        return experience;
+    }
+
+    /**
      * Get the hero's inventory.
      * 
      * @return hero's inventory
@@ -358,6 +435,23 @@ public abstract class Hero {
      */
     public Weapon getEquippedWeapon() {
         return equippedWeapon;
+    }
+
+    /**
+     * Consume one use of the equipped weapon, unequipping it if it breaks.
+     */
+    public void consumeWeaponUse() {
+        if (equippedWeapon == null) {
+            return;
+        }
+        if (equippedWeapon.getRemainingUses() > 0) {
+            equippedWeapon.consumeUse();
+            if (!equippedWeapon.isUsable()) {
+                System.out.println(equippedWeapon.getName() + " has broken and is unequipped.");
+                equippedWeapon = null;
+                weaponTwoHandedGrip = false;
+            }
+        }
     }
 
     /**

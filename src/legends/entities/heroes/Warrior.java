@@ -55,6 +55,9 @@ public class Warrior extends Hero {
         double weaponDamage = 0;
         if (equippedWeapon != null) {
             weaponDamage = equippedWeapon.getDamage();
+            if (equippedWeapon.getHandsRequired() == 1 && weaponTwoHandedGrip) {
+                weaponDamage *= 1.5; // bonus for two-handing a one-handed weapon
+            }
         }
 
         double rawDamage = (strength + weaponDamage) * 0.05;

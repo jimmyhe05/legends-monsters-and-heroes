@@ -20,6 +20,8 @@ public class Weapon extends Item {
         super(name, cost, requiredLevel);
         this.damage = damage;
         this.handsRequired = handsRequired;
+        // Weapons are durable but not infinite; give a default use count so repair matters.
+        this.remainingUses = 15;
     }
 
     /**

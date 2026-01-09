@@ -18,10 +18,10 @@ public class Inventory {
      * Initializes empty lists for weapons, armors, potions, and spells.
      */
     public Inventory() {
-        this.weapons = new ArrayList<Weapon>();
-        this.armors = new ArrayList<Armor>();
-        this.potions = new ArrayList<Potion>();
-        this.spells = new ArrayList<Spell>();
+    this.weapons = new ArrayList<>();
+    this.armors = new ArrayList<>();
+    this.potions = new ArrayList<>();
+    this.spells = new ArrayList<>();
     }
 
     // ---- Adders ----

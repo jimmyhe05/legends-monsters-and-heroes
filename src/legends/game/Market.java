@@ -1,9 +1,10 @@
 package legends.game;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
-
 import legends.entities.heroes.Hero;
 import legends.items.Armor;
 import legends.items.Inventory;
@@ -27,18 +28,48 @@ public class Market {
 	private final List<Armor> armors;
 	private final List<Potion> potions;
 	private final List<Spell> spells;
+	private final Random rand = new Random();
 
 	public Market() {
 		String base = "data/items/";
-		this.weapons = DataLoader.loadWeapons(base + "Weaponry.txt");
-		this.armors = DataLoader.loadArmors(base + "Armory.txt");
-		this.potions = DataLoader.loadPotions(base + "Potions.txt");
+		List<Weapon> allWeapons = DataLoader.loadWeapons(base + "Weaponry.txt");
+		List<Armor> allArmors = DataLoader.loadArmors(base + "Armory.txt");
+		List<Potion> allPotions = DataLoader.loadPotions(base + "Potions.txt");
 
 		// Collect all spell types into one list
-		this.spells = new ArrayList<Spell>();
-		this.spells.addAll(DataLoader.loadFireSpells(base + "FireSpells.txt"));
-		this.spells.addAll(DataLoader.loadIceSpells(base + "IceSpells.txt"));
-		this.spells.addAll(DataLoader.loadLightningSpells(base + "LightningSpells.txt"));
+		List<Spell> allSpells = new ArrayList<>();
+		allSpells.addAll(DataLoader.loadFireSpells(base + "FireSpells.txt"));
+		allSpells.addAll(DataLoader.loadIceSpells(base + "IceSpells.txt"));
+		allSpells.addAll(DataLoader.loadLightningSpells(base + "LightningSpells.txt"));
+
+		// Create per-market subsets to make inventories unique per tile
+		this.weapons = pickSubset(allWeapons, 6);
+		this.armors = pickSubset(allArmors, 6);
+		this.potions = pickSubset(allPotions, 6);
+		this.spells = pickSubset(allSpells, 6);
+	}
+
+	public Market(List<Weapon> weapons, List<Armor> armors, List<Potion> potions, List<Spell> spells) {
+		this.weapons = weapons == null ? new ArrayList<>() : weapons;
+		this.armors = armors == null ? new ArrayList<>() : armors;
+		this.potions = potions == null ? new ArrayList<>() : potions;
+		this.spells = spells == null ? new ArrayList<>() : spells;
+	}
+
+	public List<Weapon> getWeapons() {
+		return weapons;
+	}
+
+	public List<Armor> getArmors() {
+		return armors;
+	}
+
+	public List<Potion> getPotions() {
+		return potions;
+	}
+
+	public List<Spell> getSpells() {
+		return spells;
 	}
 
 	/**
@@ -54,8 +85,7 @@ public class Market {
 			return;
 		}
 
-		boolean done = false;
-		while (!done) {
+		while (true) {
 			System.out.println(Color.title("\n=== Market ==="));
 			System.out.println("Choose a hero (or 0 to leave market):");
 			// Header row for hero table (match widths with row format)
@@ -85,7 +115,6 @@ public class Market {
 
 			int choice = readInt(in);
 			if (choice == 0) {
-				done = true;
 				break;
 			}
 			if (choice < 1 || choice > party.size()) {
@@ -117,23 +146,12 @@ public class Market {
 
 			int choice = readInt(in);
 			switch (choice) {
-				case 1:
-					handleBuy(hero, in);
-					break;
-				case 2:
-					handleSell(hero, in);
-					break;
-				case 3:
-					printHeroInventory(hero);
-					break;
-				case 4:
-					handleRepair(hero, in);
-					break;
-				case 5:
-					back = true;
-					break;
-				default:
-					System.out.println(Color.error("Invalid choice."));
+				case 1 -> handleBuy(hero, in);
+				case 2 -> handleSell(hero, in);
+				case 3 -> printHeroInventory(hero);
+				case 4 -> handleRepair(hero, in);
+				case 5 -> back = true;
+				default -> System.out.println(Color.error("Invalid choice."));
 			}
 		}
 	}
@@ -147,7 +165,7 @@ public class Market {
 	 */
 	private void handleRepair(Hero hero, Scanner in) {
 		Inventory inv = hero.getInventory();
-		List<Item> repairables = new ArrayList<Item>();
+		List<Item> repairables = new ArrayList<>();
 
 		for (Weapon w : inv.getWeapons()) {
 			if (w.getRemainingUses() == 0) {
@@ -204,9 +222,10 @@ public class Market {
 			chosen.setRemainingUses(3);
 		} else if (chosen instanceof Spell) {
 			chosen.setRemainingUses(1);
-		} else {
-			// For weapons/armors, treat repair as restoring them to full/infinite use.
-			chosen.setRemainingUses(-1);
+		} else if (chosen instanceof Weapon) {
+			chosen.setRemainingUses(15);
+		} else if (chosen instanceof Armor) {
+			chosen.setRemainingUses(25);
 		}
 
 		System.out.println("Repaired " + chosen.getName() + " for " + repairCost + " gold.");
@@ -235,31 +254,28 @@ public class Market {
 
 			int choice = readInt(in);
 			switch (choice) {
-				case 1:
+				case 1 -> {
 					buyFromList(hero, in, weapons, "weapon");
 					System.out.println("Updated hero info:");
 					System.out.println("  " + hero);
-					break;
-				case 2:
+				}
+				case 2 -> {
 					buyFromList(hero, in, armors, "armor");
 					System.out.println("Updated hero info:");
 					System.out.println("  " + hero);
-					break;
-				case 3:
+				}
+				case 3 -> {
 					buyFromList(hero, in, potions, "potion");
 					System.out.println("Updated hero info:");
 					System.out.println("  " + hero);
-					break;
-				case 4:
+				}
+				case 4 -> {
 					buyFromList(hero, in, spells, "spell");
 					System.out.println("Updated hero info:");
 					System.out.println("  " + hero);
-					break;
-				case 5:
-					back = true;
-					break;
-				default:
-					System.out.println("Invalid choice.");
+				}
+				case 5 -> back = true;
+				default -> System.out.println("Invalid choice.");
 			}
 		}
 	}
@@ -375,14 +391,13 @@ public class Market {
 		}
 
 		Inventory inv = hero.getInventory();
-		if (item instanceof Weapon) {
-			inv.addWeapon((Weapon) item);
-		} else if (item instanceof Armor) {
-			inv.addArmor((Armor) item);
-		} else if (item instanceof Potion) {
-			inv.addPotion((Potion) item);
-		} else if (item instanceof Spell) {
-			inv.addSpell((Spell) item);
+		switch (item) {
+			case Weapon weapon -> inv.addWeapon(weapon);
+			case Armor armor -> inv.addArmor(armor);
+			case Potion potion -> inv.addPotion(potion);
+			case Spell spell -> inv.addSpell(spell);
+			default -> {
+			}
 		}
 
 		System.out.println("Purchased " + item.getName() + " for " + cost + " gold.");
@@ -400,7 +415,7 @@ public class Market {
      */
 	private void handleSell(Hero hero, Scanner in) {
 		Inventory inv = hero.getInventory();
-		List<SellEntry> entries = new ArrayList<SellEntry>();
+		List<SellEntry> entries = new ArrayList<>();
 
 		// Flatten hero's inventory into a single list with type info
 		for (Weapon w : inv.getWeapons()) {
@@ -442,18 +457,26 @@ public class Market {
 		double refund = item.getCost() / 2.0;
 
 		switch (selected.type) {
-			case WEAPON:
-				inv.removeWeapon((Weapon) item);
-				break;
-			case ARMOR:
-				inv.removeArmor((Armor) item);
-				break;
-			case POTION:
-				inv.removePotion((Potion) item);
-				break;
-			case SPELL:
-				inv.removeSpell((Spell) item);
-				break;
+			case WEAPON -> {
+				Weapon weapon = (Weapon) item;
+				inv.removeWeapon(weapon);
+				weapons.add(weapon);
+			}
+			case ARMOR -> {
+				Armor armor = (Armor) item;
+				inv.removeArmor(armor);
+				armors.add(armor);
+			}
+			case POTION -> {
+				Potion potion = (Potion) item;
+				inv.removePotion(potion);
+				potions.add(potion);
+			}
+			case SPELL -> {
+				Spell spell = (Spell) item;
+				inv.removeSpell(spell);
+				spells.add(spell);
+			}
 		}
 
 		hero.gainGold(refund);
@@ -529,6 +552,21 @@ public class Market {
 	}
 
 	private static enum SellType { WEAPON, ARMOR, POTION, SPELL }
+
+	/**
+	 * Randomly select up to maxCount items from the source list to stock this market.
+	 */
+	private <T> List<T> pickSubset(List<T> source, int maxCount) {
+		if (source == null || source.isEmpty()) {
+			return new ArrayList<>();
+		}
+		List<T> copy = new ArrayList<>(source);
+		Collections.shuffle(copy, rand);
+		if (copy.size() <= maxCount) {
+			return copy;
+		}
+		return new ArrayList<>(copy.subList(0, maxCount));
+	}
 
     /**
      * Helper class to hold an item and its type for selling.

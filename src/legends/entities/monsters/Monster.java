@@ -1,6 +1,8 @@
 package legends.entities.monsters;
 
-public abstract class Monster {
+import legends.entities.Combatant;
+
+public abstract class Monster implements Combatant {
 
     // ----- Core attributes -----
     protected String name;
@@ -82,6 +84,11 @@ public abstract class Monster {
         return hp <= 0;
     }
 
+    @Override
+    public boolean isDefeated() {
+        return isDead();
+    }
+
     /**
      * Get the monster's dodge probability as a decimal.
      * 
@@ -120,6 +127,7 @@ public abstract class Monster {
      *
      * @return display-formatted monster name
      */
+    @Override
     public String getDisplayName() {
         if (name == null) {
             return "";
@@ -132,6 +140,7 @@ public abstract class Monster {
      * 
      * @return monster's level
      */
+    @Override
     public int getLevel() {
         return level;
     }
@@ -141,6 +150,7 @@ public abstract class Monster {
      * 
      * @return monster's HP
      */
+    @Override
     public double getHp() {
         return hp;
     }

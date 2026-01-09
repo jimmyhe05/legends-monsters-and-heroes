@@ -59,31 +59,12 @@ public class Potion extends Item {
             if (attr.isEmpty()) continue;
 
             switch (attr) {
-                case "HEALTH":
-                case "HP":
-                    h.setHp(h.getHp() + effectAmount);
-                    break;
-
-                case "MANA":
-                case "MP":
-                    h.setMp(h.getMp() + effectAmount);
-                    break;
-
-                case "STRENGTH":
-                    h.setStrength(h.getStrength() + effectAmount);
-                    break;
-
-                case "DEXTERITY":
-                    h.setDexterity(h.getDexterity() + effectAmount);
-                    break;
-
-                case "AGILITY":
-                    h.setAgility(h.getAgility() + effectAmount);
-                    break;
-
-                default:
-                    System.out.println("Unknown attribute in potion: " + rawAttr);
-                    break;
+                case "HEALTH", "HP" -> h.setHp(h.getHp() + effectAmount);
+                case "MANA", "MP" -> h.setMp(h.getMp() + effectAmount);
+                case "STRENGTH" -> h.setStrength(h.getStrength() + effectAmount);
+                case "DEXTERITY" -> h.setDexterity(h.getDexterity() + effectAmount);
+                case "AGILITY" -> h.setAgility(h.getAgility() + effectAmount);
+                default -> System.out.println("Unknown attribute in potion: " + rawAttr);
             }
         }
 

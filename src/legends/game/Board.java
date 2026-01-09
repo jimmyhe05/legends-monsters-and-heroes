@@ -1,7 +1,8 @@
 package legends.game;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
-
 import legends.utilities.Color;
 
 /**
@@ -54,6 +55,25 @@ public class Board {
 
         generateRandomLayout();
         placePartyRandomly();
+    }
+
+    /**
+     * Rehydrate a board from a saved character layout and optional market map.
+     * Accepts characters from copyLayout(): H (party), M (market), X (inaccessible),
+     * '*' (visited common), '.' (unvisited common).
+     */
+    public Board(char[][] layout, Map<String, Market> markets) {
+        this.size = layout.length;
+        this.grid = new Tile[size][size];
+        this.visited = new boolean[size][size];
+        this.rand = new Random();
+        this.inaccessiblePercent = 0.0;
+        this.marketPercent = 0.0;
+        restoreLayout(layout, markets);
+    }
+
+    public Board(char[][] layout) {
+        this(layout, null);
     }
 
     /**
@@ -231,6 +251,50 @@ public class Board {
         return r >= 0 && r < size && c >= 0 && c < size;
     }
 
+    private void restoreLayout(char[][] layout, Map<String, Market> markets) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                char ch = layout[i][j];
+                char upper = Character.toUpperCase(ch);
+                String key = i + "," + j;
+                switch (upper) {
+                    case 'M' -> {
+                        Market market = (markets != null && markets.containsKey(key)) ? markets.get(key) : new Market();
+                        grid[i][j] = new MarketTile(market);
+                        visited[i][j] = true; // treat markets as visited once seen
+                    }
+                    case 'X' -> {
+                        grid[i][j] = new InaccessibleTile();
+                        visited[i][j] = false;
+                    }
+                    case '*' -> {
+                        grid[i][j] = new CommonTile();
+                        visited[i][j] = true;
+                    }
+                    case 'H' -> {
+                        // Hero standing on a tile; assume common unless a saved market map says otherwise.
+                        Market market = (markets != null && markets.containsKey(key)) ? markets.get(key) : null;
+                        grid[i][j] = (market != null) ? new MarketTile(market) : new CommonTile();
+                        visited[i][j] = true;
+                        partyRow = i;
+                        partyCol = j;
+                    }
+                    default -> {
+                        grid[i][j] = new CommonTile();
+                        visited[i][j] = false;
+                    }
+                }
+            }
+        }
+
+        // If no hero was placed, default to (0,0)
+        if (!isInside(partyRow, partyCol)) {
+            partyRow = 0;
+            partyCol = 0;
+            visited[partyRow][partyCol] = true;
+        }
+    }
+
     /* ===================== Accessors ===================== */
 
     /**
@@ -302,6 +366,49 @@ public class Board {
      */
     public boolean wasLastMoveFirstVisit() {
         return lastMoveFirstVisit;
+    }
+
+    /**
+     * Create a simple character grid representing the current board layout and visit state.
+     * 'H' for hero position, 'M' for market, 'X' for inaccessible, '*' for visited common,
+     * '.' for unvisited common.
+     *
+     * @return copy of the current layout as chars
+     */
+    public char[][] copyLayout() {
+        char[][] layout = new char[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (i == partyRow && j == partyCol) {
+                    layout[i][j] = 'H';
+                } else {
+                    Tile t = grid[i][j];
+                    if (t instanceof MarketTile) {
+                        layout[i][j] = 'M';
+                    } else if (t instanceof InaccessibleTile) {
+                        layout[i][j] = 'X';
+                    } else {
+                        layout[i][j] = visited[i][j] ? '*' : '.';
+                    }
+                }
+            }
+        }
+        return layout;
+    }
+
+    /**
+     * Collect all markets keyed by "row,col" for snapshotting.
+     */
+    public Map<String, Market> getMarkets() {
+        Map<String, Market> map = new HashMap<>();
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (grid[i][j] instanceof MarketTile mt) {
+                    map.put(i + "," + j, mt.getMarket());
+                }
+            }
+        }
+        return map;
     }
 
 
