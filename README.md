@@ -130,8 +130,11 @@
   - Plain-text data configuration files
   - ANSI escape codes for terminal styling
 
-  ## Screenshots / Demo
-  - Placeholder: capture gameplay, market, and battle screens and link here for reviewers.
+  ## Screenshots
+  - Welcome & party selection: ![Welcome screen](assets/screenshots/welcome.png)
+  - Hero selection: ![Hero selection](assets/screenshots/hero_selection.png)
+  - Market UI: ![Market](assets/screenshots/market.png)
+  - Battle snapshot: ![Battle](assets/screenshots/battle.png)
 
   ## License / Academic Disclaimer
   - Built as part of an academic assignment; provided for educational and portfolio purposes.
