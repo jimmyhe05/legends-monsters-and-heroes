@@ -749,7 +749,6 @@ public class Game extends BaseGame {
         }
 
          System.out.println(Color.warning("A group of monsters appears!"));
-         sound.playEffect("battle_encounter");
 
         List<Monster> encounter = createEncounter();
         if (encounter.isEmpty()) {
@@ -757,8 +756,18 @@ public class Game extends BaseGame {
             return;
         }
 
-    Battle battle = new Battle(party.asList(), encounter, sound);
+        boolean resumeMusic = musicEnabled && sound.isLoopingActive();
+        if (resumeMusic) {
+            sound.stopLoop();
+        }
+
+        Battle battle = new Battle(party.asList(), encounter, sound);
         battle.start();
+
+        if (resumeMusic && running) {
+            currentLoopTrack = "background_music";
+            sound.playLoop(currentLoopTrack, true);
+        }
 
         // If all heroes fainted, end the game.
         if (allHeroesFainted()) {

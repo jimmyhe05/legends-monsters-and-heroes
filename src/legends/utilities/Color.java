@@ -35,7 +35,7 @@ public final class Color {
     }
 
     public static String gold(double amount) {
-        return YELLOW + amount + RESET;
+        return YELLOW + String.format("%.2f", amount) + RESET;
     }
 
     public static String title(String msg) {

@@ -50,6 +50,9 @@ public class Battle {
         // start the battle
         public void start() {
     play("battle_start");
+    if (sound != null) {
+        sound.playLoop("battle_start", true);
+    }
 		System.out.println(Color.title("=== BATTLE START ==="));
 		System.out.println(Color.title("Heroes vs Monsters!"));
 
@@ -71,6 +74,10 @@ public class Battle {
 
             monstersTurn();
             endOfRoundRegen();
+        }
+
+        if (sound != null) {
+            sound.stopLoop();
         }
 
         if (allMonstersDead()) {
@@ -98,6 +105,9 @@ public class Battle {
                 continue;
             }
             heroAction(h);
+            if (fleeing) {
+                return; // battle ends immediately once any hero flees
+            }
             if (allMonstersDead()) {
                 break;
             }
@@ -116,7 +126,7 @@ public class Battle {
             System.out.println("2. Cast Spell");
             System.out.println("3. Use Potion");
             System.out.println("4. Change Equipment");
-            System.out.println("5. Inspect (free)");
+            System.out.println("5. Inspect status");
             System.out.println("6. Run");
             System.out.print("Choose action: ");
 
@@ -611,7 +621,7 @@ public class Battle {
             } else {
                 h.gainGold(goldPerHero);
                 h.gainExperience(expGain);
-                System.out.println(h.getName() + " gains " + goldPerHero + " gold and " + expGain + " EXP.");
+                System.out.println(h.getName() + " gains " + Color.gold(goldPerHero) + " gold and " + expGain + " EXP.");
             }
         }
     }
