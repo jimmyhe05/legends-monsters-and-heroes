@@ -1,11 +1,12 @@
   # Legends: Monsters & Heroes
 
-  Console-based RPG in Java that emphasizes object-oriented design, clean architecture, and extensibility. Built as a software engineering project and presented as a portfolio artifact for recruiters, instructors, and developers evaluating design quality and maintainability.
+  Console-based RPG implemented in Java, emphasizing object-oriented design, clean architecture, and extensibility. Built as a software engineering project and presented as a portfolio artifact for evaluating design quality, maintainability, and system structure.
 
   ## Table of Contents
 - [Legends: Monsters \& Heroes](#legends-monsters--heroes)
   - [Table of Contents](#table-of-contents)
   - [Project Overview](#project-overview)
+  - [Why This Project](#why-this-project)
   - [Key Features](#key-features)
   - [Architecture Overview](#architecture-overview)
   - [Object-Oriented Design](#object-oriented-design)
@@ -27,6 +28,9 @@
   - Sound effects and music via the Java Sound API with runtime toggles.
   - Save/load support to persist party, board state, and inventory snapshots.
   - Designed for clarity, separation of concerns, and extension beyond the initial assignment scope.
+
+  ## Why This Project
+  This project was built to demonstrate real-world object-oriented software design in an interactive system, emphasizing clean architecture, extensibility, and maintainability over graphical complexity.
 
   ## Key Features
   - Turn-based battle system with physical and spell attacks, potions, flee logic, and level-up flow.
