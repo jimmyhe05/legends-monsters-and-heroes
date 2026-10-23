@@ -33,11 +33,27 @@ public class Battle {
      * @param monsters List of monsters participating in the battle
      */
     public Battle(List<Hero> heroes, List<Monster> monsters, SoundService sound) {
+        this(heroes, monsters, sound, new RandomHeroTargetStrategy());
+    }
+
+    /**
+     * Constructor for Battle with an injected monster targeting strategy.
+     *
+     * @param heroes             List of heroes participating in the battle
+     * @param monsters           List of monsters participating in the battle
+     * @param sound              Sound service, may be null to run silently
+     * @param heroTargetStrategy Strategy monsters use to pick a hero to attack;
+     *                           defaults to random targeting when null
+     */
+    public Battle(List<Hero> heroes, List<Monster> monsters, SoundService sound,
+                  HeroTargetStrategy heroTargetStrategy) {
         // assume both lists are non-null
         this.heroes = heroes;
         this.monsters = monsters;
         this.in = new Scanner(System.in);
-        this.heroTargetStrategy = new RandomHeroTargetStrategy();
+        this.heroTargetStrategy = heroTargetStrategy != null
+                ? heroTargetStrategy
+                : new RandomHeroTargetStrategy();
         this.sound = sound;
     }
 

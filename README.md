@@ -47,7 +47,7 @@
   - **Domain model**: Heroes, monsters, items, spells, potions, and tiles are rich domain objects with encapsulated behavior.
   - **Board and world**: `Board` owns tile generation and rendering, separating world state from game flow.
   - **Battle engine**: `Battle` executes deterministic turn order, regeneration between rounds, and outcome handling.
-  - **Services**: `SoundService` for audio playback/toggling; `SaveLoadManager` for serialization; `EventBus` for decoupled notifications.
+  - **Services**: `SoundService` for audio playback/toggling; `SaveLoadManager` for serialization. An `EventBus` is in place as groundwork for decoupled notifications (not yet wired into the game loop).
   - **State snapshots**: `GameState`, `HeroSnapshot`, `ItemSnapshot`, and `MarketSnapshot` isolate serialization concerns from live objects.
 
   ## Object-Oriented Design
@@ -58,8 +58,10 @@
 
   ## Design Patterns Used
   - **Factory/Data Loader**: `DataLoader` and `ItemCatalog` parse hero/monster/item files into typed objects, isolating file formats from gameplay code.
-  - **Strategy/Polymorphic behavior**: Hero types, monster families, and spell classes encapsulate specialized calculations without condition-heavy branching.
-  - **Observer (lightweight)**: `EventBus` with `GameEvent`/`GameEventType` enables decoupled notifications (e.g., save events, audio hooks) without coupling to the game loop.
+  - **Strategy**: Monsters choose targets through `HeroTargetStrategy`, injected into `Battle` through its constructor (random targeting by default, lowest-HP targeting on hard difficulty). Encounter and board generation strategies are scaffolded for future difficulty modes.
+  - **Polymorphic behavior**: Hero types, monster families, and spell classes encapsulate specialized calculations without condition-heavy branching.
+  - **Observer (groundwork)**: `EventBus`, `SimpleEventBus`, `GameEvent`, and `GameEventType` define a publish/subscribe API. It is not wired in yet; the planned first use is moving sound effects onto event listeners.
+  - **Memento**: `GameState` and its snapshot classes capture party, board, and market state for save/load, separate from the live objects.
   - **Service layer**: Cross-cutting concerns like sound (`SoundService`) and persistence (`SaveLoadManager`) live in dedicated services for testability and future swaps.
   - **Template-like flows**: Battle sequencing (heroes then monsters with regeneration) and market transactions follow structured steps with overridable per-entity logic.
 

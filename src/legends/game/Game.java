@@ -14,6 +14,7 @@ import legends.entities.monsters.Exoskeleton;
 import legends.entities.monsters.Monster;
 import legends.entities.monsters.MonsterFactory;
 import legends.entities.monsters.Spirit;
+import legends.game.strategy.LowestHpTargetStrategy;
 import legends.items.Armor;
 import legends.items.Inventory;
 import legends.items.Potion;
@@ -761,7 +762,7 @@ public class Game extends BaseGame {
             sound.stopLoop();
         }
 
-        Battle battle = new Battle(party.asList(), encounter, sound);
+        Battle battle = new Battle(party.asList(), encounter, sound, targetStrategyFor(difficulty));
         battle.start();
 
         if (resumeMusic && running) {
@@ -814,6 +815,20 @@ public class Game extends BaseGame {
             }
         }
         return max;
+    }
+
+    /**
+     * Choose how monsters pick their targets for the current difficulty.
+     * Hard mode focuses the weakest hero; other modes pick at random.
+     *
+     * @param difficulty the current difficulty
+     * @return the targeting strategy to inject into a battle
+     */
+    private HeroTargetStrategy targetStrategyFor(Difficulty difficulty) {
+        if (difficulty == Difficulty.HARD) {
+            return new LowestHpTargetStrategy(rand);
+        }
+        return new RandomHeroTargetStrategy();
     }
 
     /**
